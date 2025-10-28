@@ -1,0 +1,1 @@
+export { QnAManagement } from "./QnAManagement";

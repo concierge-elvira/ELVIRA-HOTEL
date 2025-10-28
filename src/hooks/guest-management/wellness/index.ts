@@ -1,0 +1,1 @@
+export { useGuestWellnessPlaces } from "./useGuestWellnessPlaces";

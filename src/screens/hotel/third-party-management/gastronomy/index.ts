@@ -1,0 +1,1 @@
+export { Gastronomy } from "./Gastronomy";

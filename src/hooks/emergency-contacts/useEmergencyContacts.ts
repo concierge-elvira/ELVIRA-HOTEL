@@ -1,0 +1,196 @@
+import { useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "../../services/supabase";
+import { useOptimizedQuery } from "../api/useOptimizedQuery";
+import { useRealtimeSubscription } from "../realtime/useRealtimeSubscription";
+import type { Database } from "../../types/database";
+
+type EmergencyContact =
+  Database["public"]["Tables"]["emergency_contacts"]["Row"];
+type EmergencyContactInsert =
+  Database["public"]["Tables"]["emergency_contacts"]["Insert"];
+type EmergencyContactUpdate =
+  Database["public"]["Tables"]["emergency_contacts"]["Update"];
+
+const EMERGENCY_CONTACTS_QUERY_KEY = "emergency-contacts";
+
+/**
+ * Fetch emergency contacts for a specific hotel
+ */
+export function useEmergencyContacts(hotelId: string | undefined) {
+  const query = useOptimizedQuery<EmergencyContact[]>({
+    queryKey: [EMERGENCY_CONTACTS_QUERY_KEY, hotelId],
+    queryFn: async () => {
+      if (!hotelId) return [];
+
+      const { data, error } = await supabase
+        .from("emergency_contacts")
+        .select("*")
+        .eq("hotel_id", hotelId)
+        .order("contact_name", { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!hotelId,
+    config: {
+      staleTime: Infinity, // Rarely changes
+      gcTime: 30 * 60 * 1000,
+    },
+  });
+
+  // Real-time subscription
+  useRealtimeSubscription({
+    table: "emergency_contacts",
+    filter: hotelId ? `hotel_id=eq.${hotelId}` : undefined,
+    queryKey: [EMERGENCY_CONTACTS_QUERY_KEY, hotelId],
+    enabled: !!hotelId,
+  });
+
+  return query;
+}
+
+/**
+ * Fetch emergency contacts for the current hotel
+ */
+export function useCurrentHotelEmergencyContacts() {
+  const [hotelId, setHotelId] = useState<string | undefined>(undefined);
+
+  useEffect(() => {
+    const getHotelId = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("id")
+          .eq("id", user.id)
+          .single();
+
+        if (profile) {
+          const { data: hotel } = await supabase
+            .from("hotels")
+            .select("id")
+            .eq("owner_id", profile.id)
+            .single();
+
+          if (hotel) {
+            setHotelId(hotel.id);
+          }
+        }
+      }
+    };
+
+    getHotelId();
+  }, []);
+
+  return useEmergencyContacts(hotelId);
+}
+
+/**
+ * Create a new emergency contact
+ */
+export function useCreateEmergencyContact() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (newContact: EmergencyContactInsert) => {
+      const { data, error } = await supabase
+        .from("emergency_contacts")
+        .insert(newContact)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data: EmergencyContact) => {
+      queryClient.invalidateQueries({
+        queryKey: [EMERGENCY_CONTACTS_QUERY_KEY, data.hotel_id],
+      });
+    },
+  });
+}
+
+/**
+ * Update an existing emergency contact
+ */
+export function useUpdateEmergencyContact() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: EmergencyContactUpdate;
+    }) => {
+      const { data, error } = await supabase
+        .from("emergency_contacts")
+        .update(updates)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data: EmergencyContact) => {
+      queryClient.invalidateQueries({
+        queryKey: [EMERGENCY_CONTACTS_QUERY_KEY, data.hotel_id],
+      });
+    },
+  });
+}
+
+/**
+ * Delete an emergency contact
+ */
+export function useDeleteEmergencyContact() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, hotelId }: { id: string; hotelId: string }) => {
+      const { error } = await supabase
+        .from("emergency_contacts")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      return { id, hotelId };
+    },
+    onSuccess: (data: { id: string; hotelId: string }) => {
+      queryClient.invalidateQueries({
+        queryKey: [EMERGENCY_CONTACTS_QUERY_KEY, data.hotelId],
+      });
+    },
+  });
+}
+
+/**
+ * Toggle emergency contact active status
+ */
+export function useToggleEmergencyContactStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const { data, error } = await supabase
+        .from("emergency_contacts")
+        .update({ is_active: isActive })
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data: EmergencyContact) => {
+      queryClient.invalidateQueries({
+        queryKey: [EMERGENCY_CONTACTS_QUERY_KEY, data.hotel_id],
+      });
+    },
+  });
+}

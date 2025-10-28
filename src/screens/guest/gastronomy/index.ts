@@ -1,0 +1,1 @@
+export { GuestGastronomy } from "./GuestGastronomy";

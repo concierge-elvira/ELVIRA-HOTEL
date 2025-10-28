@@ -1,0 +1,1 @@
+export { GuestCommunication } from "./GuestCommunication";

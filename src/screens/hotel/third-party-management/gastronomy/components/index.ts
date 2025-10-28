@@ -1,0 +1,1 @@
+export { RecommendedPlacesTable } from "./RecommendedPlacesTable";

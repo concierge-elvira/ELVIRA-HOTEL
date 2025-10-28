@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* Debug: This should appear in the browser's computed styles if CSS is loading */
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}

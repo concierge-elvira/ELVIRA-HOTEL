@@ -1,0 +1,1 @@
+export { useWebAnalytics } from "./useWebAnalytics";
