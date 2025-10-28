@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useGuestAuth } from "../../../contexts/guest";
 import { GuestPageLayout } from "../shared/layout";
 import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
+import { useGuestQARecommendations } from "../../../hooks/guest-management/qa";
+import { QACategoryAccordion, AskQuestion } from "./components";
 
 interface GuestQAProps {
   onNavigate?: (path: string) => void;
@@ -18,6 +20,26 @@ export const GuestQA: React.FC<GuestQAProps> = ({
   const { data: announcements } = useAnnouncements(
     guestSession?.guestData?.hotel_id
   );
+
+  // Fetch Q&A recommendations
+  const { data: qaRecommendations = [], isLoading } = useGuestQARecommendations(
+    guestSession?.guestData?.hotel_id
+  );
+
+  // Group Q&A by category
+  const groupedQA = useMemo(() => {
+    const groups: Record<string, typeof qaRecommendations> = {};
+
+    qaRecommendations.forEach((qa) => {
+      const category = qa.category || "GENERAL INFO";
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+      groups[category].push(qa);
+    });
+
+    return groups;
+  }, [qaRecommendations]);
 
   if (!guestSession) {
     return null;
@@ -46,9 +68,41 @@ export const GuestQA: React.FC<GuestQAProps> = ({
       onNavigate={onNavigate}
       onClockClick={onClockClick}
     >
+      {/* Ask Question Section - Full width, no margins */}
+      <AskQuestion hotelId={guestData.hotel_id} />
+
       <div className="px-4 py-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Q&A</h2>
-        {/* Add your Q&A content here */}
+        {/* Browse Common Questions Header */}
+        <div className="mb-3">
+          <h3 className="text-sm font-medium text-gray-700">
+            Or browse common questions:
+          </h3>
+        </div>
+
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="text-center py-6">
+            <p className="text-gray-500 text-sm">Loading questions...</p>
+          </div>
+        ) : Object.keys(groupedQA).length === 0 ? (
+          /* Empty State */
+          <div className="text-center py-6">
+            <p className="text-gray-500 text-sm">
+              No common questions available at the moment.
+            </p>
+          </div>
+        ) : (
+          /* Q&A Categories */
+          <div className="space-y-2 pb-20">
+            {Object.entries(groupedQA).map(([category, items]) => (
+              <QACategoryAccordion
+                key={category}
+                category={category}
+                items={items}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </GuestPageLayout>
   );
