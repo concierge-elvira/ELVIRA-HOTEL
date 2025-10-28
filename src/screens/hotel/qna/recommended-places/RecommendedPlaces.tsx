@@ -89,6 +89,10 @@ export function RecommendedPlaces({ searchValue }: RecommendedPlacesProps) {
       data: { user },
     } = await supabase.auth.getUser();
 
+    // Convert imageUrls array to JSON string for storage
+    const imageUrlJson =
+      data.imageUrls.length > 0 ? JSON.stringify(data.imageUrls) : null;
+
     if (modalMode === "create") {
       await createPlace.mutateAsync({
         hotel_id: hotelId,
@@ -99,6 +103,7 @@ export function RecommendedPlaces({ searchValue }: RecommendedPlacesProps) {
         longitud: data.longitude,
         is_active: data.isActive,
         created_by: user?.id || null,
+        image_url: imageUrlJson,
       });
     } else if (modalMode === "edit" && selectedPlace) {
       await updatePlace.mutateAsync({
@@ -110,6 +115,7 @@ export function RecommendedPlaces({ searchValue }: RecommendedPlacesProps) {
           latitud: data.latitude,
           longitud: data.longitude,
           is_active: data.isActive,
+          image_url: imageUrlJson,
         },
       });
     }

@@ -6,6 +6,7 @@ import { CategoryMenu, type CategoryType } from "../shared/menus";
 import {
   HotelCategoryCards,
   ExperiencesCategoryCards,
+  ToVisitCategoryCards,
 } from "../shared/category-cards";
 import { RecommendedSection } from "../shared/recommended";
 import { AboutUsSection } from "../shared/about-us";
@@ -110,10 +111,13 @@ export const GuestHome: React.FC<GuestHomeProps> = ({
         {selectedCategory === "experiences" && (
           <ExperiencesCategoryCards onNavigate={onNavigate} />
         )}
+        {selectedCategory === "tovisit" && (
+          <ToVisitCategoryCards onNavigate={onNavigate} />
+        )}
       </div>
 
       {/* Recommended Section - Dynamic based on selected category */}
-      {selectedCategory === "hotel" &&
+      {(selectedCategory === "hotel" || selectedCategory === "tovisit") &&
         !recommendationsLoading &&
         recommendations?.all && (
           <RecommendedSection

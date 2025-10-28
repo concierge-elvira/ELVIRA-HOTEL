@@ -8,6 +8,7 @@ import { GuestPlaces } from "./places";
 import { GuestTours } from "./tours";
 import { GuestWellness } from "./wellness";
 import { GuestGastronomy } from "./gastronomy";
+import { GuestToVisit } from "./to-visit";
 import { RequestHistoryBottomSheet } from "./request-history";
 import { useGuestAuth } from "../../contexts/guest";
 import { GuestNotificationProvider } from "../../contexts/guest/GuestNotificationContext";
@@ -23,7 +24,8 @@ type GuestRoute =
   | "/guest/tours"
   | "/guest/wellness"
   | "/guest/gastronomy"
-  | "/guest/services";
+  | "/guest/services"
+  | "/guest/to-visit";
 
 export const GuestRouter: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<GuestRoute>("/guest/home");
@@ -112,6 +114,14 @@ export const GuestRouter: React.FC = () => {
       case "/guest/gastronomy":
         return (
           <GuestGastronomy
+            onNavigate={handleNavigate}
+            currentPath={currentRoute}
+            onClockClick={handleClockClick}
+          />
+        );
+      case "/guest/to-visit":
+        return (
+          <GuestToVisit
             onNavigate={handleNavigate}
             currentPath={currentRoute}
             onClockClick={handleClockClick}

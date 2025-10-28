@@ -10,6 +10,7 @@ export interface RecommendedPlaceFormData {
   latitude: number | null;
   longitude: number | null;
   isActive: boolean;
+  imageUrls: string[];
 }
 
 export interface FormErrors {
@@ -38,6 +39,6 @@ export interface PlaceSectionProps {
   errors?: FormErrors;
   onChange: (
     field: keyof RecommendedPlaceFormData,
-    value: string | number | boolean | null
+    value: string | number | boolean | null | string[]
   ) => void;
 }

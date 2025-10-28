@@ -28,55 +28,69 @@ export function ItemImageGallery({
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
 
-    // Validate max images
-    if (value.length >= maxImages) {
+    // Calculate how many images we can still add
+    const remainingSlots = maxImages - value.length;
+    if (remainingSlots <= 0) {
       setError(`Maximum ${maxImages} images allowed`);
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError("File size must be less than 5MB");
-      return;
-    }
+    // Convert FileList to Array and limit to remaining slots
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
 
-    // Validate file type
-    if (!file.type.startsWith("image/")) {
-      setError("Please upload an image file");
-      return;
+    // Validate all files first
+    for (const file of filesToUpload) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError(`File "${file.name}" is too large. Max size is 5MB`);
+        return;
+      }
+
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setError(`File "${file.name}" is not an image`);
+        return;
+      }
     }
 
     setError(null);
     setUploading(true);
 
     try {
-      // Generate unique filename
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}-${Math.random()
-        .toString(36)
-        .substring(7)}.${fileExt}`;
-      const filePath = `${bucketPath}/${fileName}`;
+      const uploadedUrls: string[] = [];
 
-      // Upload to Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from("hotel-assets")
-        .upload(filePath, file);
+      // Upload all files
+      for (const file of filesToUpload) {
+        // Generate unique filename
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(7)}.${fileExt}`;
+        const filePath = `${bucketPath}/${fileName}`;
 
-      if (uploadError) throw uploadError;
+        // Upload to Supabase Storage
+        const { error: uploadError } = await supabase.storage
+          .from("hotel-assets")
+          .upload(filePath, file);
 
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("hotel-assets").getPublicUrl(filePath);
+        if (uploadError) throw uploadError;
 
-      // Add to array
-      onChange([...value, publicUrl]);
+        // Get public URL
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("hotel-assets").getPublicUrl(filePath);
+
+        uploadedUrls.push(publicUrl);
+      }
+
+      // Add all uploaded images to array
+      onChange([...value, ...uploadedUrls]);
     } catch (err) {
       console.error("Upload error:", err);
-      setError("Failed to upload image. Please try again.");
+      setError("Failed to upload images. Please try again.");
     } finally {
       setUploading(false);
       // Reset file input
@@ -178,6 +192,7 @@ export function ItemImageGallery({
       <input
         type="file"
         accept="image/*"
+        multiple
         onChange={handleFileChange}
         disabled={disabled || uploading || value.length >= maxImages}
         className="hidden"
@@ -197,12 +212,13 @@ export function ItemImageGallery({
               }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {uploading ? "Uploading..." : "Add Image"}
+              {uploading ? "Uploading..." : "Add Images"}
             </button>
           </label>
           {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
           <p className="text-xs text-gray-500 mt-1">
-            Max size: 5MB per image. Supported formats: JPG, PNG, GIF
+            Max size: 5MB per image. Select multiple images at once. Supported
+            formats: JPG, PNG, GIF
           </p>
         </div>
       )}

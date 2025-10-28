@@ -1,14 +1,14 @@
 /**
  * Category Menu Component
  *
- * Horizontal menu with categories: Hotel, Experiences, Currency, Transport
+ * Horizontal menu with categories: Hotel, Experiences, To Visit
  * Matches the reference design with icon-based navigation
  */
 
-import { Building2, MapPin, DollarSign, Car } from "lucide-react";
+import { Building2, MapPin, Compass } from "lucide-react";
 import { useState } from "react";
 
-export type CategoryType = "hotel" | "experiences" | "currency" | "transport";
+export type CategoryType = "hotel" | "experiences" | "tovisit";
 
 interface CategoryMenuProps {
   onCategoryChange?: (category: CategoryType) => void;
@@ -32,14 +32,9 @@ const categories: CategoryItem[] = [
     icon: <MapPin className="w-5 h-5" />,
   },
   {
-    id: "currency",
-    label: "Currency",
-    icon: <DollarSign className="w-5 h-5" />,
-  },
-  {
-    id: "transport",
-    label: "Transport",
-    icon: <Car className="w-5 h-5" />,
+    id: "tovisit",
+    label: "To Visit",
+    icon: <Compass className="w-5 h-5" />,
   },
 ];
 
@@ -53,8 +48,8 @@ export const CategoryMenu = ({ onCategoryChange }: CategoryMenuProps) => {
 
   return (
     <div className="mt-2 mb-2 -mx-4">
-      {/* Grid container - 4 equal columns */}
-      <div className="grid grid-cols-4 bg-white border-b border-gray-200">
+      {/* Grid container - 3 equal columns */}
+      <div className="grid grid-cols-3 bg-white border-b border-gray-200">
         {categories.map((category) => {
           const isActive = activeCategory === category.id;
 

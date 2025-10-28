@@ -6,6 +6,7 @@ import {
 import { BasicInfoSection } from "./BasicInfoSection";
 import { LocationSection } from "./LocationSection";
 import { DescriptionSection } from "./DescriptionSection";
+import { ImageSection } from "./ImageSection";
 import type {
   RecommendedPlaceFormData,
   FormErrors,
@@ -28,6 +29,7 @@ export function RecommendedPlaceModal({
     latitude: null,
     longitude: null,
     isActive: true,
+    imageUrls: [],
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -36,6 +38,20 @@ export function RecommendedPlaceModal({
   // Reset form when modal opens/closes or place changes
   useEffect(() => {
     if (isOpen && place) {
+      // Parse image_url if it exists
+      let parsedImages: string[] = [];
+      if (place.image_url) {
+        try {
+          parsedImages = JSON.parse(place.image_url);
+          if (!Array.isArray(parsedImages)) {
+            parsedImages = [];
+          }
+        } catch {
+          // If it's not JSON, treat as single URL
+          parsedImages = [place.image_url];
+        }
+      }
+
       setFormData({
         placeName: place.place_name || "",
         address: place.address || "",
@@ -43,6 +59,7 @@ export function RecommendedPlaceModal({
         latitude: place.latitud || null,
         longitude: place.longitud || null,
         isActive: place.is_active,
+        imageUrls: parsedImages,
       });
     } else if (isOpen && !place) {
       setFormData({
@@ -52,6 +69,7 @@ export function RecommendedPlaceModal({
         latitude: null,
         longitude: null,
         isActive: true,
+        imageUrls: [],
       });
     }
     setErrors({});
@@ -59,7 +77,7 @@ export function RecommendedPlaceModal({
 
   const handleFieldChange = (
     field: keyof RecommendedPlaceFormData,
-    value: string | number | boolean | null
+    value: string | number | boolean | null | string[]
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error for this field
@@ -149,6 +167,13 @@ export function RecommendedPlaceModal({
       />
 
       <DescriptionSection
+        mode={mode}
+        formData={formData}
+        errors={errors}
+        onChange={handleFieldChange}
+      />
+
+      <ImageSection
         mode={mode}
         formData={formData}
         errors={errors}
