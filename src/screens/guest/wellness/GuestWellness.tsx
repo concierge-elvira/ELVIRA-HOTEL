@@ -5,6 +5,7 @@ import { SearchFilterBar } from "../shared/search-filter";
 import { PlaceCategorySection } from "../shared/cards/place";
 import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestWellnessPlaces } from "../../../hooks/guest-management/wellness";
+import { PlaceDetailBottomSheet, type PlaceDetailData } from "../shared/modals";
 
 interface GuestWellnessProps {
   onNavigate?: (path: string) => void;
@@ -17,6 +18,10 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
 }) => {
   const { guestSession } = useGuestAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState<PlaceDetailData | null>(
+    null
+  );
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const { data: announcements } = useAnnouncements(
     guestSession?.guestData?.hotel_id
@@ -90,7 +95,7 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
           description: place.vicinity || place.formatted_address || "",
           imageUrl: photoUrl,
           rating: place.rating || undefined,
-          badge: item.hotel_recommended ? "Recommended" : undefined,
+          isRecommended: item.hotel_recommended || false,
         };
       })
       .filter(Boolean);
@@ -129,8 +134,84 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
       })) || [];
 
   const handlePlaceClick = (placeId: string) => {
-    console.log("Place clicked:", placeId);
-    // Handle place click - could open maps or show details
+    console.log("🎯 [GuestWellness] Place clicked:", placeId);
+    console.log("🎯 [GuestWellness] Available wellnessPlaces:", wellnessPlaces);
+
+    // Find the full place data from wellnessPlaces
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const placeData = wellnessPlaces.find((item: any) => {
+      const place = item.thirdparty_places;
+      console.log("🔍 [GuestWellness] Checking place:", {
+        place_id: place?.id,
+        matches: place?.id === placeId,
+      });
+      return place?.id === placeId;
+    });
+
+    console.log("✅ [GuestWellness] Found placeData:", placeData);
+
+    if (placeData) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const place = (placeData as any).thirdparty_places;
+      console.log("📍 [GuestWellness] Extracted place:", place);
+
+      // Transform thirdparty_places data to google_data format for the bottom sheet
+      const googleData = {
+        formatted_address: place.formatted_address,
+        vicinity: place.vicinity,
+        rating: place.rating,
+        user_ratings_total: place.user_ratings_total,
+        price_level: place.price_level,
+        opening_hours: place.opening_hours, // This is already JSONB
+        formatted_phone_number: place.formatted_phone_number,
+        international_phone_number: place.international_phone_number,
+        website: place.website,
+        url: place.google_maps_url,
+        photos: place.photos, // This is already JSONB
+        photo_reference: place.photo_reference, // Direct photo reference field
+        business_status: place.business_status,
+        types: place.types, // This is already an array
+        reviews: place.reviews, // This is already JSONB
+        geometry:
+          place.latitude && place.longitude
+            ? {
+                location: {
+                  lat: place.latitude,
+                  lng: place.longitude,
+                },
+              }
+            : undefined,
+      };
+
+      // Transform to PlaceDetailData format
+      const transformedPlace = {
+        id: place.id,
+        name: place.name || "Unknown",
+        google_data: googleData,
+        recommended: placeData.hotel_recommended || false,
+        type: place.category || "wellness",
+        hotelCoordinates:
+          hotelData.latitude && hotelData.longitude
+            ? {
+                lat: hotelData.latitude,
+                lng: hotelData.longitude,
+              }
+            : undefined,
+      };
+
+      console.log("🔄 [GuestWellness] Transformed place:", transformedPlace);
+      console.log("🔄 [GuestWellness] Google data:", googleData);
+
+      setSelectedPlace(transformedPlace);
+      setIsDetailOpen(true);
+    } else {
+      console.log("❌ [GuestWellness] No place data found for ID:", placeId);
+    }
+  };
+
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    setSelectedPlace(null);
   };
 
   return (
@@ -186,6 +267,13 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
           />
         </>
       )}
+
+      {/* Place Detail Bottom Sheet */}
+      <PlaceDetailBottomSheet
+        isOpen={isDetailOpen}
+        onClose={handleCloseDetail}
+        place={selectedPlace}
+      />
     </GuestPageLayout>
   );
 };

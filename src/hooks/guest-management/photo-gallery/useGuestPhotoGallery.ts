@@ -2,10 +2,12 @@
  * Guest Photo Gallery Hook
  *
  * Fetches photo gallery images from hotel settings
+ * Includes real-time subscription for live updates
  */
 
 import { useOptimizedQuery } from "../../api/useOptimizedQuery";
 import { getGuestSupabaseClient } from "../../../services/guestSupabase";
+import { useGuestRealtimeSubscription } from "../../realtime/useGuestRealtimeSubscription";
 
 interface PhotoGalleryData {
   images: string[];
@@ -17,7 +19,7 @@ interface PhotoGalleryData {
  * Fetch photo gallery data from hotel settings
  */
 export function useGuestPhotoGallery(hotelId: string | undefined) {
-  return useOptimizedQuery<PhotoGalleryData | null>({
+  const query = useOptimizedQuery<PhotoGalleryData | null>({
     queryKey: ["guest-photo-gallery", hotelId],
     queryFn: async () => {
       if (!hotelId) {
@@ -84,4 +86,14 @@ export function useGuestPhotoGallery(hotelId: string | undefined) {
       gcTime: 15 * 60 * 1000,
     },
   });
+
+  // Real-time subscription for live updates
+  useGuestRealtimeSubscription({
+    table: "hotel_settings",
+    filter: hotelId ? `hotel_id=eq.${hotelId}` : undefined,
+    queryKey: ["guest-photo-gallery", hotelId],
+    enabled: !!hotelId,
+  });
+
+  return query;
 }

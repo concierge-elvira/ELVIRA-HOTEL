@@ -11,7 +11,9 @@ import {
   getGuestSession,
   clearGuestSession,
 } from "../../services/guest";
+import { getGuestSupabaseClient } from "../../services/guestSupabase";
 import type { GuestSession } from "../../types/guest";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 
 interface GuestAuthContextType {
   guestSession: GuestSession | null;
@@ -39,6 +41,91 @@ export function GuestAuthProvider({ children }: { children: ReactNode }) {
     }
     setLoading(false);
   }, []);
+
+  // Set up realtime subscription for guest data updates
+  useEffect(() => {
+    if (!guestSession?.guestData?.id) {
+      return;
+    }
+
+    const guestId = guestSession.guestData.id;
+    const currentToken = guestSession.token;
+    const currentHotelData = guestSession.hotelData;
+
+    console.log(
+      "[Guest Auth] Setting up realtime subscription for guest:",
+      guestId
+    );
+
+    let channel: RealtimeChannel;
+    const guestSupabase = getGuestSupabaseClient();
+
+    const setupSubscription = () => {
+      channel = guestSupabase
+        .channel(`guest-data-changes-${guestId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "UPDATE",
+            schema: "public",
+            table: "guests",
+            filter: `id=eq.${guestId}`,
+          },
+          (payload) => {
+            console.log("[Guest Auth] Guest data updated:", payload);
+
+            // Update the session with new guest data
+            if (payload.new) {
+              setGuestSession((prevSession) => {
+                if (!prevSession) return prevSession;
+
+                const updatedSession: GuestSession = {
+                  token: currentToken,
+                  guestData: {
+                    ...prevSession.guestData,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ...(payload.new as any),
+                  },
+                  hotelData: currentHotelData,
+                };
+
+                saveGuestSession(
+                  currentToken,
+                  updatedSession.guestData,
+                  currentHotelData
+                );
+
+                console.log(
+                  "[Guest Auth] ✅ Guest session updated with new data"
+                );
+                return updatedSession;
+              });
+            }
+          }
+        )
+        .subscribe((status) => {
+          console.log("[Guest Auth] Subscription status:", status);
+          if (status === "SUBSCRIBED") {
+            console.log(
+              "[Guest Auth] ✅ Successfully subscribed to guest data updates"
+            );
+          }
+        });
+    };
+
+    setupSubscription();
+
+    return () => {
+      console.log("[Guest Auth] Cleaning up guest data subscription");
+      if (channel) {
+        guestSupabase.removeChannel(channel);
+      }
+    };
+  }, [
+    guestSession?.guestData?.id,
+    guestSession?.token,
+    guestSession?.hotelData,
+  ]);
 
   const signIn = async (roomNumber: string, verificationCode: string) => {
     try {

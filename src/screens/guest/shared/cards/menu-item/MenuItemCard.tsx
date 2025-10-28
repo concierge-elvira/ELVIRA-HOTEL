@@ -7,6 +7,7 @@
 
 import React from "react";
 import { Plus } from "lucide-react";
+import { RecommendedBadge } from "../RecommendedBadge";
 
 export interface MenuItemCardProps {
   id: string;
@@ -16,7 +17,8 @@ export interface MenuItemCardProps {
   imageUrl?: string;
   category?: string;
   onAddClick?: (id: string) => void;
-  badge?: string;
+  onCardClick?: (id: string) => void;
+  isRecommended?: boolean;
 }
 
 export const MenuItemCard: React.FC<MenuItemCardProps> = ({
@@ -25,11 +27,28 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
   description,
   price,
   imageUrl,
-  badge,
+  isRecommended,
   onAddClick,
+  onCardClick,
 }) => {
+  const handleCardClick = () => {
+    if (onCardClick) {
+      onCardClick(id);
+    }
+  };
+
+  const handleAddClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click when clicking the add button
+    if (onAddClick) {
+      onAddClick(id);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200">
+    <div
+      className="relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200 cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="flex gap-3">
         {/* Image and Add Button - LEFT SIDE */}
         {imageUrl && (
@@ -48,7 +67,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
             {/* Add Button - Bottom Right of Image */}
             {onAddClick && (
               <button
-                onClick={() => onAddClick(id)}
+                onClick={handleAddClick}
                 className="absolute bottom-2 right-2 w-8 h-8 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center hover:bg-blue-50 hover:border-blue-500 transition-all duration-200 shadow-sm"
                 aria-label={`Add ${title}`}
               >
@@ -72,12 +91,8 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
         </div>
       </div>
 
-      {/* Badge - Top Left */}
-      {badge && (
-        <div className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-semibold px-2 py-1 rounded">
-          {badge}
-        </div>
-      )}
+      {/* Recommended Badge - Top Left */}
+      <RecommendedBadge show={isRecommended || false} />
     </div>
   );
 };

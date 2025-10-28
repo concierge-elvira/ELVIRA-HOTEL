@@ -12,12 +12,14 @@ interface MenuCategorySectionProps {
   categoryName: string;
   items: MenuItemCardProps[];
   onAddClick?: (id: string) => void;
+  onCardClick?: (id: string) => void;
 }
 
 export const MenuCategorySection: React.FC<MenuCategorySectionProps> = ({
   categoryName,
   items,
   onAddClick,
+  onCardClick,
 }) => {
   if (!items || items.length === 0) {
     return null;
@@ -36,7 +38,12 @@ export const MenuCategorySection: React.FC<MenuCategorySectionProps> = ({
       {/* Items Grid */}
       <div className="space-y-3 px-4">
         {items.map((item) => (
-          <MenuItemCard key={item.id} {...item} onAddClick={onAddClick} />
+          <MenuItemCard
+            key={item.id}
+            {...item}
+            onAddClick={onAddClick}
+            onCardClick={onCardClick}
+          />
         ))}
       </div>
     </div>

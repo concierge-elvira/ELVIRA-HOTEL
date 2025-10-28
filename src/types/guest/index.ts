@@ -20,6 +20,9 @@ export interface HotelData {
   city: string | null;
   country: string | null;
   reception_phone: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  official_languages: string | null;
 }
 
 export interface GuestAuthResponse {

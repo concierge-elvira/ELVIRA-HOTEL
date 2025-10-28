@@ -5,6 +5,7 @@ import { SearchFilterBar } from "../shared/search-filter";
 import { PlaceCategorySection } from "../shared/cards/place";
 import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestGastronomyPlaces } from "../../../hooks/guest-management/gastronomy";
+import { PlaceDetailBottomSheet, type PlaceDetailData } from "../shared/modals";
 
 interface GuestGastronomyProps {
   onNavigate?: (path: string) => void;
@@ -17,6 +18,10 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
 }) => {
   const { guestSession } = useGuestAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState<PlaceDetailData | null>(
+    null
+  );
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const { data: announcements } = useAnnouncements(
     guestSession?.guestData?.hotel_id
@@ -105,7 +110,7 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
           description: place.vicinity || place.formatted_address || "",
           imageUrl: photoUrl,
           rating: place.rating || undefined,
-          badge: item.hotel_recommended ? "Recommended" : undefined,
+          isRecommended: item.hotel_recommended || false,
         };
       })
       .filter(Boolean);
@@ -151,7 +156,67 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
 
   const handlePlaceClick = (placeId: string) => {
     console.log("Place clicked:", placeId);
-    // Handle place click - could open maps or show details
+    // Find the full place data from gastronomyPlaces
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const placeData = gastronomyPlaces.find((item: any) => {
+      const place = item.thirdparty_places;
+      return place?.id === placeId;
+    });
+
+    if (placeData) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const place = (placeData as any).thirdparty_places;
+
+      // Transform thirdparty_places data to google_data format for the bottom sheet
+      const googleData = {
+        formatted_address: place.formatted_address,
+        vicinity: place.vicinity,
+        rating: place.rating,
+        user_ratings_total: place.user_ratings_total,
+        price_level: place.price_level,
+        opening_hours: place.opening_hours,
+        formatted_phone_number: place.formatted_phone_number,
+        international_phone_number: place.international_phone_number,
+        website: place.website,
+        url: place.google_maps_url,
+        photos: place.photos,
+        photo_reference: place.photo_reference,
+        business_status: place.business_status,
+        types: place.types,
+        reviews: place.reviews,
+        geometry:
+          place.latitude && place.longitude
+            ? {
+                location: {
+                  lat: place.latitude,
+                  lng: place.longitude,
+                },
+              }
+            : undefined,
+      };
+
+      // Transform to PlaceDetailData format
+      setSelectedPlace({
+        id: place.id,
+        name: place.name || "Unknown",
+        google_data: googleData,
+        recommended: placeData.hotel_recommended || false,
+        type: place.category || "gastronomy",
+        hotelCoordinates:
+          hotelData.latitude && hotelData.longitude
+            ? {
+                lat: hotelData.latitude,
+                lng: hotelData.longitude,
+              }
+            : undefined,
+      });
+      setIsDetailOpen(true);
+    }
+  };
+
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    setSelectedPlace(null);
   };
 
   return (
@@ -207,6 +272,13 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
           />
         </>
       )}
+
+      {/* Place Detail Bottom Sheet */}
+      <PlaceDetailBottomSheet
+        isOpen={isDetailOpen}
+        onClose={handleCloseDetail}
+        place={selectedPlace}
+      />
     </GuestPageLayout>
   );
 };

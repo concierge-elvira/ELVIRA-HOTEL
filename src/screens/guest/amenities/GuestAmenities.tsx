@@ -5,6 +5,10 @@ import { SearchFilterBar } from "../shared/search-filter";
 import { MenuCategorySection } from "../shared/cards/menu-item";
 import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestAmenities } from "../../../hooks/guest-management/amenities";
+import {
+  AmenityDetailBottomSheet,
+  type AmenityDetailData,
+} from "../shared/modals";
 import type { MenuItemCardProps } from "../shared/cards/menu-item/MenuItemCard";
 
 interface GuestAmenitiesProps {
@@ -18,6 +22,9 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
 }) => {
   const { guestSession } = useGuestAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedAmenity, setSelectedAmenity] =
+    useState<AmenityDetailData | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const { data: announcements } = useAnnouncements(
     guestSession?.guestData?.hotel_id
@@ -53,13 +60,32 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
           description: amenity.description || "",
           price: amenity.price,
           imageUrl: amenity.image_url || undefined,
-          badge: amenity.recommended ? "Recommended" : undefined,
+          isRecommended: amenity.recommended || false,
         });
         return acc;
       },
       {}
     );
   }, [amenities, searchQuery]);
+
+  const handleAmenityClick = (itemId: string) => {
+    const amenity = amenities?.find((a) => a.id === itemId);
+    if (amenity) {
+      setSelectedAmenity(amenity);
+      setIsDetailOpen(true);
+    }
+  };
+
+  const handleBook = (amenityId: string) => {
+    console.log("Book amenity:", amenityId);
+    // TODO: Implement booking functionality
+    setIsDetailOpen(false);
+  };
+
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    setSelectedAmenity(null);
+  };
 
   const handleAddItem = (itemId: string) => {
     console.log("Request amenity:", itemId);
@@ -121,10 +147,19 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
               categoryName={category}
               items={items}
               onAddClick={handleAddItem}
+              onCardClick={handleAmenityClick}
             />
           ))}
         </>
       )}
+
+      {/* Amenity Detail Bottom Sheet */}
+      <AmenityDetailBottomSheet
+        isOpen={isDetailOpen}
+        onClose={handleCloseDetail}
+        amenity={selectedAmenity}
+        onBook={handleBook}
+      />
     </GuestPageLayout>
   );
 };

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getGuestSupabaseClient } from "../../../services/guestSupabase";
+import { useGuestRealtimeSubscription } from "../../realtime/useGuestRealtimeSubscription";
 
 const GUEST_TOURS_QUERY_KEY = "guest-tours-places";
 
@@ -8,9 +9,10 @@ const GUEST_TOURS_QUERY_KEY = "guest-tours-places";
  * Returns places from hotel_thirdparty_places where:
  * - hotel_approved = true
  * - thirdparty_place.category = 'Tours'
+ * Includes real-time subscription for live updates
  */
 export function useGuestToursPlaces(hotelId: string | undefined) {
-  return useQuery({
+  const query = useQuery({
     queryKey: [GUEST_TOURS_QUERY_KEY, hotelId],
     queryFn: async () => {
       if (!hotelId) {
@@ -41,4 +43,14 @@ export function useGuestToursPlaces(hotelId: string | undefined) {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
+
+  // Real-time subscription for live updates
+  useGuestRealtimeSubscription({
+    table: "hotel_thirdparty_places",
+    filter: hotelId ? `hotel_id=eq.${hotelId}` : undefined,
+    queryKey: [GUEST_TOURS_QUERY_KEY, hotelId],
+    enabled: !!hotelId,
+  });
+
+  return query;
 }

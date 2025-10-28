@@ -5,6 +5,10 @@ import { SearchFilterBar } from "../shared/search-filter";
 import { MenuCategorySection } from "../shared/cards/menu-item";
 import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestProducts } from "../../../hooks/guest-management/shop";
+import {
+  ProductDetailBottomSheet,
+  type ProductDetailData,
+} from "../shared/modals";
 
 interface GuestShopProps {
   onNavigate?: (path: string) => void;
@@ -17,6 +21,9 @@ export const GuestShop: React.FC<GuestShopProps> = ({
 }) => {
   const { guestSession } = useGuestAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductDetailData | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const { data: announcements } = useAnnouncements(
     guestSession?.guestData?.hotel_id
@@ -81,9 +88,23 @@ export const GuestShop: React.FC<GuestShopProps> = ({
         message: `${a.title} • ${a.description}`,
       })) || [];
 
-  const handleAddItem = (itemId: string) => {
-    console.log("Add product:", itemId);
-    // Handle add to cart
+  const handleProductClick = (itemId: string) => {
+    const product = products.find((p) => p.id === itemId);
+    if (product) {
+      setSelectedProduct(product);
+      setIsDetailOpen(true);
+    }
+  };
+
+  const handleAddToCart = (productId: string) => {
+    console.log("Add to cart:", productId);
+    // TODO: Implement cart functionality
+    setIsDetailOpen(false);
+  };
+
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    setSelectedProduct(null);
   };
 
   return (
@@ -132,11 +153,20 @@ export const GuestShop: React.FC<GuestShopProps> = ({
               description: item.description || "",
               price: item.price,
               imageUrl: item.image_url || undefined,
+              isRecommended: item.recommended || false,
             }))}
-            onAddClick={handleAddItem}
+            onCardClick={handleProductClick}
           />
         ))
       )}
+
+      {/* Product Detail Bottom Sheet */}
+      <ProductDetailBottomSheet
+        isOpen={isDetailOpen}
+        onClose={handleCloseDetail}
+        product={selectedProduct}
+        onAddToCart={handleAddToCart}
+      />
     </GuestPageLayout>
   );
 };

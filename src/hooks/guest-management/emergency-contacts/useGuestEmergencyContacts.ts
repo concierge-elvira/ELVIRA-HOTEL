@@ -1,10 +1,12 @@
 /**
  * Hook for fetching emergency contacts for guests
  * Uses guest JWT authentication
+ * Includes real-time subscription for live updates
  */
 
 import { useQuery } from "@tanstack/react-query";
 import { getGuestSupabaseClient } from "../../../services/guestSupabase";
+import { useGuestRealtimeSubscription } from "../../realtime/useGuestRealtimeSubscription";
 
 interface EmergencyContact {
   id: string;
@@ -16,7 +18,7 @@ interface EmergencyContact {
 const GUEST_EMERGENCY_CONTACTS_QUERY_KEY = "guest-emergency-contacts";
 
 export const useGuestEmergencyContacts = (hotelId: string | null) => {
-  return useQuery({
+  const query = useQuery({
     queryKey: [GUEST_EMERGENCY_CONTACTS_QUERY_KEY, hotelId],
     queryFn: async () => {
       if (!hotelId) {
@@ -40,4 +42,14 @@ export const useGuestEmergencyContacts = (hotelId: string | null) => {
     },
     enabled: !!hotelId,
   });
+
+  // Real-time subscription for live updates
+  useGuestRealtimeSubscription({
+    table: "emergency_contacts",
+    filter: hotelId ? `hotel_id=eq.${hotelId}` : undefined,
+    queryKey: [GUEST_EMERGENCY_CONTACTS_QUERY_KEY, hotelId],
+    enabled: !!hotelId,
+  });
+
+  return query;
 };

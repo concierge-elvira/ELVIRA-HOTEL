@@ -71,9 +71,13 @@ export function GuestCommunication() {
   // Transform messages to ChatMessage format
   const chatMessages: ChatMessage[] = (messages || []).map((msg) => {
     const isStaffMessage = msg.sender_type === "hotel_staff";
-    const displayText = msg.is_translated
-      ? msg.translated_text || msg.message_text
-      : msg.message_text;
+
+    // Display logic:
+    // - Staff messages (sent by hotel): show original (what hotel staff typed)
+    // - Guest messages (received): show translated version (if available)
+    const displayText = isStaffMessage
+      ? msg.message_text // Hotel staff sees their own message in original language
+      : msg.translated_text || msg.message_text; // Hotel staff sees guest message translated
 
     return {
       id: msg.id,
@@ -91,20 +95,19 @@ export function GuestCommunication() {
 
   const handleSendMessage = async (content: string) => {
     if (!conversationId) {
-return;
+      return;
     }
-try {
+    try {
       await sendMessage.mutateAsync({
         conversationId,
         message: content,
       });
-} catch (error) {
-}
+    } catch (error) {}
   };
 
   // Handle filter button click
   const handleFilterClick = () => {
-// TODO: Implement filter functionality
+    // TODO: Implement filter functionality
   };
 
   return (

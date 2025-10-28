@@ -1,12 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   Home,
-  Wrench,
+  ConciergeBell,
   UtensilsCrossed,
   ShoppingBag,
   LogOut,
 } from "lucide-react";
 import { useGuestAuth } from "../../../../contexts/guest";
+import { useGuestHotelSettings } from "../../../../hooks/guest-management/settings/useGuestHotelSettings";
 
 interface NavItem {
   id: string;
@@ -14,6 +15,7 @@ interface NavItem {
   icon: React.ReactNode;
   path: string;
   isAction?: boolean;
+  enabled?: boolean;
 }
 
 interface GuestBottomNavProps {
@@ -21,46 +23,67 @@ interface GuestBottomNavProps {
   onNavigate?: (path: string) => void;
 }
 
-const navItems: NavItem[] = [
-  {
-    id: "home",
-    label: "Home",
-    icon: <Home className="w-6 h-6" />,
-    path: "/guest/home",
-  },
-  {
-    id: "services",
-    label: "Services",
-    icon: <Wrench className="w-6 h-6" />,
-    path: "/guest/services",
-  },
-  {
-    id: "dine-in",
-    label: "Dine In",
-    icon: <UtensilsCrossed className="w-6 h-6" />,
-    path: "/guest/restaurant",
-  },
-  {
-    id: "shop",
-    label: "Shop",
-    icon: <ShoppingBag className="w-6 h-6" />,
-    path: "/guest/shop",
-  },
-
-  {
-    id: "logout",
-    label: "Logout",
-    icon: <LogOut className="w-6 h-6" />,
-    path: "/logout",
-    isAction: true,
-  },
-];
-
 export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
   currentPath = "/guest/home",
   onNavigate,
 }) => {
-  const { signOut } = useGuestAuth();
+  const { signOut, guestSession } = useGuestAuth();
+  const { data: hotelSettings } = useGuestHotelSettings(
+    guestSession?.guestData?.hotel_id
+  );
+
+  console.log("[GuestBottomNav] Hotel settings received:", hotelSettings);
+
+  const navItems: NavItem[] = useMemo(
+    () => [
+      {
+        id: "home",
+        label: "Home",
+        icon: <Home className="w-6 h-6" />,
+        path: "/guest/home",
+        enabled: true, // Home is always enabled
+      },
+      {
+        id: "services",
+        label: "Services",
+        icon: <ConciergeBell className="w-6 h-6" />,
+        path: "/guest/services",
+        enabled: hotelSettings?.amenitiesEnabled ?? true,
+      },
+      {
+        id: "dine-in",
+        label: "Dine In",
+        icon: <UtensilsCrossed className="w-6 h-6" />,
+        path: "/guest/restaurant",
+        enabled: hotelSettings?.restaurantEnabled ?? true,
+      },
+      {
+        id: "shop",
+        label: "Shop",
+        icon: <ShoppingBag className="w-6 h-6" />,
+        path: "/guest/shop",
+        enabled: hotelSettings?.shopEnabled ?? true,
+      },
+      {
+        id: "logout",
+        label: "Logout",
+        icon: <LogOut className="w-6 h-6" />,
+        path: "/logout",
+        isAction: true,
+        enabled: true, // Logout is always enabled
+      },
+    ],
+    [hotelSettings]
+  );
+
+  // Filter navigation items based on settings
+  const visibleNavItems = useMemo(
+    () => navItems.filter((item) => item.enabled),
+    [navItems]
+  );
+
+  console.log("[GuestBottomNav] All nav items:", navItems);
+  console.log("[GuestBottomNav] Visible nav items:", visibleNavItems);
 
   const handleNavClick = (item: NavItem) => {
     if (item.isAction && item.id === "logout") {
@@ -71,16 +94,16 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg z-50">
-      <div className="flex items-center justify-around px-2 py-2 max-w-md mx-auto">
-        {navItems.map((item) => {
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-md border-t border-gray-200/50 shadow-lg z-50">
+      <div className="flex items-center justify-around px-2 py-1.5 max-w-md mx-auto">
+        {visibleNavItems.map((item) => {
           const isActive = currentPath === item.path && !item.isAction;
 
           return (
             <button
               key={item.id}
               onClick={() => handleNavClick(item)}
-              className={`flex flex-col items-center justify-center gap-1 px-3 py-2 transition-all flex-1 relative ${
+              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1.5 transition-all flex-1 relative ${
                 isActive
                   ? "text-blue-600"
                   : item.isAction
@@ -88,7 +111,7 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              <div>{item.icon}</div>
+              <div className="scale-90">{item.icon}</div>
               <span
                 className={`text-xs ${
                   isActive ? "font-semibold" : "font-medium"

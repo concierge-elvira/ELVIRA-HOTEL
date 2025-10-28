@@ -2,10 +2,12 @@
  * Hook for fetching amenities for guests
  * Uses guest JWT authentication
  * Only returns active amenities (is_active = true)
+ * Includes real-time subscription for live updates
  */
 
 import { useOptimizedQuery } from "../../api/useOptimizedQuery";
 import { getGuestSupabaseClient } from "../../../services/guestSupabase";
+import { useGuestRealtimeSubscription } from "../../realtime/useGuestRealtimeSubscription";
 
 interface GuestAmenity {
   id: string;
@@ -22,7 +24,7 @@ interface GuestAmenity {
  * Fetch active amenities for a hotel
  */
 export function useGuestAmenities(hotelId: string | undefined) {
-  return useOptimizedQuery<GuestAmenity[]>({
+  const query = useOptimizedQuery<GuestAmenity[]>({
     queryKey: ["guest-amenities", hotelId],
     queryFn: async () => {
       if (!hotelId) {
@@ -54,4 +56,14 @@ export function useGuestAmenities(hotelId: string | undefined) {
       gcTime: 10 * 60 * 1000,
     },
   });
+
+  // Real-time subscription for live updates
+  useGuestRealtimeSubscription({
+    table: "amenities",
+    filter: hotelId ? `hotel_id=eq.${hotelId}` : undefined,
+    queryKey: ["guest-amenities", hotelId],
+    enabled: !!hotelId,
+  });
+
+  return query;
 }

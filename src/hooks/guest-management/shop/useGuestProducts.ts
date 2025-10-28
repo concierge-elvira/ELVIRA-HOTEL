@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getGuestSupabaseClient } from "../../../services/guestSupabase";
+import { useGuestRealtimeSubscription } from "../../realtime/useGuestRealtimeSubscription";
 import type { Database } from "../../../types/database";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
@@ -9,9 +10,10 @@ const GUEST_PRODUCTS_QUERY_KEY = "guest-products";
 /**
  * Fetch active products for guests
  * Only returns items where is_active = true
+ * Includes real-time subscription for live updates
  */
 export function useGuestProducts(hotelId: string | undefined) {
-  return useQuery<Product[]>({
+  const query = useQuery<Product[]>({
     queryKey: [GUEST_PRODUCTS_QUERY_KEY, hotelId],
     queryFn: async () => {
       if (!hotelId) return [];
@@ -33,6 +35,16 @@ export function useGuestProducts(hotelId: string | undefined) {
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
   });
+
+  // Real-time subscription for live updates
+  useGuestRealtimeSubscription({
+    table: "products",
+    filter: hotelId ? `hotel_id=eq.${hotelId}` : undefined,
+    queryKey: [GUEST_PRODUCTS_QUERY_KEY, hotelId],
+    enabled: !!hotelId,
+  });
+
+  return query;
 }
 
 /**

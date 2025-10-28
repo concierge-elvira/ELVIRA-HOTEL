@@ -7,6 +7,7 @@
 
 import React from "react";
 import { MapPin, Star } from "lucide-react";
+import { RecommendedBadge } from "../RecommendedBadge";
 
 export interface PlaceCardProps {
   id: string;
@@ -16,7 +17,7 @@ export interface PlaceCardProps {
   category?: string;
   rating?: number;
   onClick?: (id: string) => void;
-  badge?: string;
+  isRecommended?: boolean;
 }
 
 export const PlaceCard: React.FC<PlaceCardProps> = ({
@@ -24,7 +25,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
   title,
   description,
   imageUrl,
-  badge,
+  isRecommended,
   rating,
   onClick,
 }) => {
@@ -36,14 +37,14 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200 ${
+      className={`relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200 ${
         onClick ? "cursor-pointer" : ""
       }`}
       onClick={handleClick}
     >
       <div className="flex gap-3">
         {/* Image - LEFT SIDE */}
-        {imageUrl && (
+        {imageUrl ? (
           <div className="relative shrink-0">
             <div className="w-28 h-28 overflow-hidden bg-gray-100">
               <img
@@ -55,6 +56,13 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
                   target.style.display = "none";
                 }}
               />
+            </div>
+          </div>
+        ) : (
+          // Placeholder when no image - maintains consistent layout
+          <div className="relative shrink-0">
+            <div className="w-28 h-28 bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center">
+              <MapPin size={32} className="text-emerald-400" />
             </div>
           </div>
         )}
@@ -82,12 +90,8 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
         </div>
       </div>
 
-      {/* Badge - Top Left */}
-      {badge && (
-        <div className="absolute top-2 left-2 bg-emerald-500 text-white text-xs font-semibold px-2 py-1 rounded">
-          {badge}
-        </div>
-      )}
+      {/* Recommended Badge - Top Left */}
+      <RecommendedBadge show={isRecommended || false} />
     </div>
   );
 };

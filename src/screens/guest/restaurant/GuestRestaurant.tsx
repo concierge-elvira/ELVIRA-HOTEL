@@ -5,6 +5,10 @@ import { SearchFilterBar } from "../shared/search-filter";
 import { MenuCategorySection } from "../shared/cards/menu-item";
 import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestMenuItems } from "../../../hooks/guest-management/restaurant";
+import {
+  MenuItemDetailBottomSheet,
+  type MenuItemDetailData,
+} from "../shared/modals";
 
 interface GuestRestaurantProps {
   onNavigate?: (path: string) => void;
@@ -17,6 +21,9 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
 }) => {
   const { guestSession } = useGuestAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMenuItem, setSelectedMenuItem] =
+    useState<MenuItemDetailData | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   const { data: announcements } = useAnnouncements(
     guestSession?.guestData?.hotel_id
@@ -81,6 +88,25 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
         message: `${a.title} • ${a.description}`,
       })) || [];
 
+  const handleMenuItemClick = (itemId: string) => {
+    const menuItem = menuItems.find((m) => m.id === itemId);
+    if (menuItem) {
+      setSelectedMenuItem(menuItem);
+      setIsDetailOpen(true);
+    }
+  };
+
+  const handleAddToCart = (menuItemId: string) => {
+    console.log("Add to cart:", menuItemId);
+    // TODO: Implement cart functionality
+    setIsDetailOpen(false);
+  };
+
+  const handleCloseDetail = () => {
+    setIsDetailOpen(false);
+    setSelectedMenuItem(null);
+  };
+
   const handleAddItem = (itemId: string) => {
     console.log("Add item:", itemId);
     // Handle add to cart
@@ -132,11 +158,21 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
               description: item.description || "",
               price: item.price,
               imageUrl: item.image_url || undefined,
+              isRecommended: item.hotel_recommended || false,
             }))}
             onAddClick={handleAddItem}
+            onCardClick={handleMenuItemClick}
           />
         ))
       )}
+
+      {/* Menu Item Detail Bottom Sheet */}
+      <MenuItemDetailBottomSheet
+        isOpen={isDetailOpen}
+        onClose={handleCloseDetail}
+        item={selectedMenuItem}
+        onAddToCart={handleAddToCart}
+      />
     </GuestPageLayout>
   );
 };

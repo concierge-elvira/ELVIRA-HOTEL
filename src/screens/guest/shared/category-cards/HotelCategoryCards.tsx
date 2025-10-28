@@ -8,8 +8,10 @@
  * - Q&A
  */
 
-import React from "react";
+import React, { useMemo } from "react";
 import { CategoryCard } from "./CategoryCard";
+import { useGuestAuth } from "../../../../contexts/guest";
+import { useGuestHotelSettings } from "../../../../hooks/guest-management/settings/useGuestHotelSettings";
 
 interface HotelCategoryCardsProps {
   onNavigate?: (path: string) => void;
@@ -18,36 +20,60 @@ interface HotelCategoryCardsProps {
 export const HotelCategoryCards: React.FC<HotelCategoryCardsProps> = ({
   onNavigate,
 }) => {
-  const hotelCards = [
-    {
-      id: "amenities",
-      title: "Amenities",
-      description: "Hotel facilities and services",
-      path: "/guest/amenities",
-    },
-    {
-      id: "dine-in",
-      title: "Dine In",
-      description: "Room service and restaurant",
-      path: "/guest/restaurant",
-    },
-    {
-      id: "hotel-shop",
-      title: "Hotel Shop",
-      description: "Purchase hotel merchandise",
-      path: "/guest/shop",
-    },
-    {
-      id: "qna",
-      title: "Q&A",
-      description: "Frequently asked questions",
-      path: "/guest/qa",
-    },
-  ];
+  const { guestSession } = useGuestAuth();
+  const { data: hotelSettings, isLoading } = useGuestHotelSettings(
+    guestSession?.guestData?.hotel_id
+  );
+
+  console.log("[HotelCategoryCards] Hotel settings received:", hotelSettings);
+  console.log("[HotelCategoryCards] Is loading:", isLoading);
+
+  const hotelCards = useMemo(
+    () => [
+      {
+        id: "amenities",
+        title: "Amenities",
+        description: "Hotel facilities and services",
+        path: "/guest/amenities",
+        enabled: hotelSettings?.amenitiesEnabled ?? true,
+      },
+      {
+        id: "dine-in",
+        title: "Dine In",
+        description: "Room service and restaurant",
+        path: "/guest/restaurant",
+        enabled: hotelSettings?.restaurantEnabled ?? true,
+      },
+      {
+        id: "hotel-shop",
+        title: "Hotel Shop",
+        description: "Purchase hotel merchandise",
+        path: "/guest/shop",
+        enabled: hotelSettings?.shopEnabled ?? true,
+      },
+      {
+        id: "qna",
+        title: "Q&A",
+        description: "Frequently asked questions",
+        path: "/guest/qa",
+        enabled: true, // Q&A is always enabled
+      },
+    ],
+    [hotelSettings]
+  );
+
+  // Filter cards based on settings
+  const visibleCards = useMemo(
+    () => hotelCards.filter((card) => card.enabled),
+    [hotelCards]
+  );
+
+  console.log("[HotelCategoryCards] All cards:", hotelCards);
+  console.log("[HotelCategoryCards] Visible cards:", visibleCards);
 
   return (
     <div className="grid grid-cols-2 gap-2.5 px-4">
-      {hotelCards.map((card) => (
+      {visibleCards.map((card) => (
         <CategoryCard
           key={card.id}
           title={card.title}

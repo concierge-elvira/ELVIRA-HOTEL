@@ -2,10 +2,12 @@
  * Guest About Us Hook
  *
  * Fetches about us information from hotel settings
+ * Includes real-time subscription for live updates
  */
 
 import { useOptimizedQuery } from "../../api/useOptimizedQuery";
 import { getGuestSupabaseClient } from "../../../services/guestSupabase";
+import { useGuestRealtimeSubscription } from "../../realtime/useGuestRealtimeSubscription";
 
 interface AboutUsData {
   aboutUs: string;
@@ -17,12 +19,17 @@ interface AboutUsData {
  * Fetch about us data from hotel settings
  */
 export function useGuestAboutUs(hotelId: string | undefined) {
-  return useOptimizedQuery<AboutUsData | null>({
+  const query = useOptimizedQuery<AboutUsData | null>({
     queryKey: ["guest-about-us", hotelId],
     queryFn: async () => {
       if (!hotelId) {
         return null;
       }
+
+      console.log(
+        "[Guest About Us] Fetching about us data for hotel:",
+        hotelId
+      );
 
       // Get guest-authenticated Supabase client
       const supabase = getGuestSupabaseClient();
@@ -36,11 +43,14 @@ export function useGuestAboutUs(hotelId: string | undefined) {
         .maybeSingle();
 
       if (error) {
-        console.error("Error fetching about us data:", error);
+        console.error("[Guest About Us] Error fetching about us data:", error);
         return null;
       }
 
+      console.log("[Guest About Us] Fetched data:", data);
+
       if (!data || !data.about_us) {
+        console.log("[Guest About Us] No about us data found");
         return null;
       }
 
@@ -58,11 +68,14 @@ export function useGuestAboutUs(hotelId: string | undefined) {
         }
       }
 
-      return {
+      const result = {
         aboutUs: data.about_us || "",
         buttonText,
         buttonUrl,
       };
+
+      console.log("[Guest About Us] Returning parsed data:", result);
+      return result;
     },
     enabled: !!hotelId,
     config: {
@@ -70,4 +83,20 @@ export function useGuestAboutUs(hotelId: string | undefined) {
       gcTime: 15 * 60 * 1000,
     },
   });
+
+  // Real-time subscription for live updates
+  // Filter by both hotel_id AND setting_key to only listen to about_section changes
+  useGuestRealtimeSubscription({
+    table: "hotel_settings",
+    filter: hotelId
+      ? `hotel_id=eq.${hotelId}&setting_key=eq.about_section`
+      : undefined,
+    queryKey: ["guest-about-us", hotelId],
+    enabled: !!hotelId,
+    onUpdate: (payload) => {
+      console.log("[Guest About Us] 🔔 About Us section updated:", payload);
+    },
+  });
+
+  return query;
 }
