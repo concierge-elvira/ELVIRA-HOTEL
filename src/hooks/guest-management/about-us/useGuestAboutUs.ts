@@ -26,10 +26,6 @@ export function useGuestAboutUs(hotelId: string | undefined) {
         return null;
       }
 
-      console.log(
-        "[Guest About Us] Fetching about us data for hotel:",
-        hotelId
-      );
 
       // Get guest-authenticated Supabase client
       const supabase = getGuestSupabaseClient();
@@ -43,14 +39,14 @@ export function useGuestAboutUs(hotelId: string | undefined) {
         .maybeSingle();
 
       if (error) {
-        console.error("[Guest About Us] Error fetching about us data:", error);
+
         return null;
       }
 
-      console.log("[Guest About Us] Fetched data:", data);
+
 
       if (!data || !data.about_us) {
-        console.log("[Guest About Us] No about us data found");
+
         return null;
       }
 
@@ -74,7 +70,7 @@ export function useGuestAboutUs(hotelId: string | undefined) {
         buttonUrl,
       };
 
-      console.log("[Guest About Us] Returning parsed data:", result);
+
       return result;
     },
     enabled: !!hotelId,
@@ -94,7 +90,7 @@ export function useGuestAboutUs(hotelId: string | undefined) {
     queryKey: ["guest-about-us", hotelId],
     enabled: !!hotelId,
     onUpdate: (payload) => {
-      console.log("[Guest About Us] 🔔 About Us section updated:", payload);
+
     },
   });
 

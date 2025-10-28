@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
-import { useGuestAuth } from "../../../contexts/guest";
+import { useGuestAuth, useGuestCart } from "../../../contexts/guest";
 import { GuestPageLayout } from "../shared/layout";
 import { SearchFilterBar } from "../shared/search-filter";
+import { CartButton } from "../../../components/guest/shared/cart";
 import { MenuCategorySection } from "../shared/cards/menu-item";
 import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestAmenities } from "../../../hooks/guest-management/amenities";
@@ -14,13 +15,21 @@ import type { MenuItemCardProps } from "../shared/cards/menu-item/MenuItemCard";
 interface GuestAmenitiesProps {
   onNavigate?: (path: string) => void;
   currentPath?: string;
+  onClockClick?: () => void;
 }
 
 export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
   onNavigate,
   currentPath = "/guest/amenities",
+  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
+  const {
+    amenityCartCount,
+    addToAmenityCart,
+    isAmenityInCart,
+    removeFromAmenityCart,
+  } = useGuestCart();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedAmenity, setSelectedAmenity] =
     useState<AmenityDetailData | null>(null);
@@ -61,12 +70,13 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
           price: amenity.price,
           imageUrl: amenity.image_url || undefined,
           isRecommended: amenity.recommended || false,
+          isAdded: isAmenityInCart(amenity.id),
         });
         return acc;
       },
       {}
     );
-  }, [amenities, searchQuery]);
+  }, [amenities, searchQuery, isAmenityInCart]);
 
   const handleAmenityClick = (itemId: string) => {
     const amenity = amenities?.find((a) => a.id === itemId);
@@ -77,8 +87,15 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
   };
 
   const handleBook = (amenityId: string) => {
-    console.log("Book amenity:", amenityId);
-    // TODO: Implement booking functionality
+    const amenity = amenities?.find((a) => a.id === amenityId);
+    if (amenity) {
+      addToAmenityCart({
+        id: amenity.id,
+        name: amenity.name,
+        price: amenity.price,
+        imageUrl: amenity.image_url || undefined,
+      });
+    }
     setIsDetailOpen(false);
   };
 
@@ -88,8 +105,21 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
   };
 
   const handleAddItem = (itemId: string) => {
-    console.log("Request amenity:", itemId);
-    // TODO: Handle amenity request
+    const amenity = amenities?.find((a) => a.id === itemId);
+    if (amenity) {
+      addToAmenityCart({
+        id: amenity.id,
+        name: amenity.name,
+        price: amenity.price,
+        imageUrl: amenity.image_url || undefined,
+      });
+
+    }
+  };
+
+  const handleRemoveItem = (itemId: string) => {
+
+    removeFromAmenityCart(itemId);
   };
 
   if (!guestSession) {
@@ -117,6 +147,7 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
       announcements={activeAnnouncements}
       currentPath={currentPath}
       onNavigate={onNavigate}
+      onClockClick={onClockClick}
       headerSlot={
         <SearchFilterBar
           searchValue={searchQuery}
@@ -126,6 +157,12 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
             console.log("Filter clicked");
           }}
           placeholder="Search amenities..."
+          cartButton={
+            <CartButton
+              itemCount={amenityCartCount}
+              onClick={() => console.log("View cart")}
+            />
+          }
         />
       }
     >
@@ -148,6 +185,7 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
               items={items}
               onAddClick={handleAddItem}
               onCardClick={handleAmenityClick}
+              onRemoveClick={handleRemoveItem}
             />
           ))}
         </>

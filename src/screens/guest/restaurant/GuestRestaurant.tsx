@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
-import { useGuestAuth } from "../../../contexts/guest";
+import { useGuestAuth, useGuestCart } from "../../../contexts/guest";
 import { GuestPageLayout } from "../shared/layout";
 import { SearchFilterBar } from "../shared/search-filter";
+import { CartButton } from "../../../components/guest/shared/cart";
 import { MenuCategorySection } from "../shared/cards/menu-item";
 import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestMenuItems } from "../../../hooks/guest-management/restaurant";
@@ -13,13 +14,22 @@ import {
 interface GuestRestaurantProps {
   onNavigate?: (path: string) => void;
   currentPath?: string;
+  onClockClick?: () => void;
 }
 
 export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
   onNavigate,
   currentPath = "/guest/restaurant",
+  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
+  const {
+    restaurantCartCount,
+    addToRestaurantCart,
+    incrementRestaurantItem,
+    decrementRestaurantItem,
+    getRestaurantItemQuantity,
+  } = useGuestCart();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMenuItem, setSelectedMenuItem] =
     useState<MenuItemDetailData | null>(null);
@@ -97,8 +107,16 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
   };
 
   const handleAddToCart = (menuItemId: string) => {
-    console.log("Add to cart:", menuItemId);
-    // TODO: Implement cart functionality
+    const menuItem = menuItems.find((m) => m.id === menuItemId);
+    if (menuItem) {
+      addToRestaurantCart({
+        id: menuItem.id,
+        name: menuItem.name,
+        price: menuItem.price,
+        quantity: 1,
+        imageUrl: menuItem.image_url || undefined,
+      });
+    }
     setIsDetailOpen(false);
   };
 
@@ -108,8 +126,18 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
   };
 
   const handleAddItem = (itemId: string) => {
-    console.log("Add item:", itemId);
-    // Handle add to cart
+    const menuItem = menuItems.find((m) => m.id === itemId);
+    if (menuItem) {
+      console.log("Add item:", menuItem.name);
+      addToRestaurantCart({
+        id: menuItem.id,
+        name: menuItem.name,
+        price: menuItem.price,
+        quantity: 1,
+        imageUrl: menuItem.image_url || undefined,
+      });
+
+    }
   };
 
   return (
@@ -122,6 +150,7 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
       announcements={activeAnnouncements}
       currentPath={currentPath}
       onNavigate={onNavigate}
+      onClockClick={onClockClick}
       headerSlot={
         <SearchFilterBar
           searchValue={searchQuery}
@@ -131,6 +160,12 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
             console.log("Filter clicked");
           }}
           placeholder="Search menu..."
+          cartButton={
+            <CartButton
+              itemCount={restaurantCartCount}
+              onClick={() => console.log("View cart")}
+            />
+          }
         />
       }
     >
@@ -159,9 +194,12 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
               price: item.price,
               imageUrl: item.image_url || undefined,
               isRecommended: item.hotel_recommended || false,
+              quantity: getRestaurantItemQuantity(item.id),
             }))}
             onAddClick={handleAddItem}
             onCardClick={handleMenuItemClick}
+            onIncrement={incrementRestaurantItem}
+            onDecrement={decrementRestaurantItem}
           />
         ))
       )}

@@ -74,11 +74,7 @@ export function useGuestHotelSettings(hotelId: string | undefined) {
         data.map((s) => [s.setting_key, s.setting_value])
       );
 
-      console.log("[Guest Hotel Settings] Raw data from database:", data);
-      console.log(
-        "[Guest Hotel Settings] Settings map:",
-        Object.fromEntries(settingsMap)
-      );
+
 
       const result = {
         aboutSectionEnabled: settingsMap.get("about_section") !== false,
@@ -92,10 +88,7 @@ export function useGuestHotelSettings(hotelId: string | undefined) {
         chatEnabled: settingsMap.get("live_chat_support") !== false,
       };
 
-      console.log(
-        "[Guest Hotel Settings] Computed visibility settings:",
-        result
-      );
+
       return result;
     },
     enabled: !!hotelId,

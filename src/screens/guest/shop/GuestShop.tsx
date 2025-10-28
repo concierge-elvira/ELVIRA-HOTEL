@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from "react";
-import { useGuestAuth } from "../../../contexts/guest";
+import { useGuestAuth, useGuestCart } from "../../../contexts/guest";
 import { GuestPageLayout } from "../shared/layout";
 import { SearchFilterBar } from "../shared/search-filter";
+import { CartButton } from "../../../components/guest/shared/cart";
 import { MenuCategorySection } from "../shared/cards/menu-item";
 import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestProducts } from "../../../hooks/guest-management/shop";
@@ -13,13 +14,22 @@ import {
 interface GuestShopProps {
   onNavigate?: (path: string) => void;
   currentPath?: string;
+  onClockClick?: () => void;
 }
 
 export const GuestShop: React.FC<GuestShopProps> = ({
   onNavigate,
   currentPath = "/guest/shop",
+  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
+  const {
+    shopCartCount,
+    addToShopCart,
+    incrementShopItem,
+    decrementShopItem,
+    getShopItemQuantity,
+  } = useGuestCart();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProduct, setSelectedProduct] =
     useState<ProductDetailData | null>(null);
@@ -97,14 +107,39 @@ export const GuestShop: React.FC<GuestShopProps> = ({
   };
 
   const handleAddToCart = (productId: string) => {
-    console.log("Add to cart:", productId);
-    // TODO: Implement cart functionality
+    const product = products.find((p) => p.id === productId);
+    if (product) {
+      console.log("Adding to cart:", product.name);
+      addToShopCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        imageUrl: product.image_url || undefined,
+      });
+      console.log("Cart count after add:", shopCartCount + 1);
+    }
     setIsDetailOpen(false);
   };
 
   const handleCloseDetail = () => {
     setIsDetailOpen(false);
     setSelectedProduct(null);
+  };
+
+  const handleAddItem = (itemId: string) => {
+    const product = products.find((p) => p.id === itemId);
+    if (product) {
+      console.log("Add item to shop cart:", product.name);
+      addToShopCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: 1,
+        imageUrl: product.image_url || undefined,
+      });
+      console.log("Item added to shop cart");
+    }
   };
 
   return (
@@ -117,6 +152,7 @@ export const GuestShop: React.FC<GuestShopProps> = ({
       announcements={activeAnnouncements}
       currentPath={currentPath}
       onNavigate={onNavigate}
+      onClockClick={onClockClick}
       headerSlot={
         <SearchFilterBar
           searchValue={searchQuery}
@@ -126,6 +162,12 @@ export const GuestShop: React.FC<GuestShopProps> = ({
             console.log("Filter clicked");
           }}
           placeholder="Search products..."
+          cartButton={
+            <CartButton
+              itemCount={shopCartCount}
+              onClick={() => console.log("View cart")}
+            />
+          }
         />
       }
     >
@@ -154,8 +196,12 @@ export const GuestShop: React.FC<GuestShopProps> = ({
               price: item.price,
               imageUrl: item.image_url || undefined,
               isRecommended: item.recommended || false,
+              quantity: getShopItemQuantity(item.id),
             }))}
             onCardClick={handleProductClick}
+            onAddClick={handleAddItem}
+            onIncrement={incrementShopItem}
+            onDecrement={decrementShopItem}
           />
         ))
       )}

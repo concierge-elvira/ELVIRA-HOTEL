@@ -10,6 +10,7 @@ import { Clock, MessageCircle } from "lucide-react";
 import { FloatingBellButton } from "./FloatingBellButton";
 import { FloatingActionButton } from "./FloatingActionButton";
 import { GuestChatScreen } from "../../../screens/guest/chat";
+import { useGuestNotification } from "../../../contexts/guest/GuestNotificationContext";
 
 interface FloatingWidgetMenuProps {
   onClockClick?: () => void;
@@ -24,6 +25,7 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const { shouldShakeBell, shouldShakeClock } = useGuestNotification();
 
   const handleToggle = () => {
     setIsOpen(!isOpen);
@@ -48,12 +50,14 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
       label: "Messages",
       onClick: () => handleActionClick(handleMessageClick),
       bgColor: "bg-blue-500",
+      shouldShake: false, // Messages don't shake for order updates
     },
     {
       icon: Clock,
       label: "Room Service",
       onClick: () => handleActionClick(onClockClick),
       bgColor: "bg-purple-500",
+      shouldShake: shouldShakeClock, // Shake when order status changes
     },
   ];
 
@@ -79,6 +83,7 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
               bgColor={action.bgColor}
               index={index}
               isVisible={isOpen}
+              shouldShake={action.shouldShake}
             />
           ))}
 
@@ -87,6 +92,7 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
             isOpen={isOpen}
             onClick={handleToggle}
             hasNotifications={hasNotifications}
+            shouldShake={shouldShakeBell}
           />
         </div>
       </div>

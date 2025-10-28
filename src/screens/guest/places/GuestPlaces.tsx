@@ -6,11 +6,13 @@ import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements"
 interface GuestPlacesProps {
   onNavigate?: (path: string) => void;
   currentPath?: string;
+  onClockClick?: () => void;
 }
 
 export const GuestPlaces: React.FC<GuestPlacesProps> = ({
   onNavigate,
   currentPath = "/guest/places",
+  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
   const { data: announcements } = useAnnouncements(
@@ -42,6 +44,7 @@ export const GuestPlaces: React.FC<GuestPlacesProps> = ({
       announcements={activeAnnouncements}
       currentPath={currentPath}
       onNavigate={onNavigate}
+      onClockClick={onClockClick}
     >
       <div className="px-4 py-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Guest Places</h2>

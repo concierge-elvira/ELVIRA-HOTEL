@@ -10,11 +10,13 @@ import { PlaceDetailBottomSheet, type PlaceDetailData } from "../shared/modals";
 interface GuestGastronomyProps {
   onNavigate?: (path: string) => void;
   currentPath?: string;
+  onClockClick?: () => void;
 }
 
 export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
   onNavigate,
   currentPath = "/guest/gastronomy",
+  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
   const [searchQuery, setSearchQuery] = useState("");
@@ -229,6 +231,7 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
       announcements={activeAnnouncements}
       currentPath={currentPath}
       onNavigate={onNavigate}
+      onClockClick={onClockClick}
       headerSlot={
         <SearchFilterBar
           searchValue={searchQuery}

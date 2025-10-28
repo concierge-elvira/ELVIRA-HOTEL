@@ -25,8 +25,7 @@ export const HotelCategoryCards: React.FC<HotelCategoryCardsProps> = ({
     guestSession?.guestData?.hotel_id
   );
 
-  console.log("[HotelCategoryCards] Hotel settings received:", hotelSettings);
-  console.log("[HotelCategoryCards] Is loading:", isLoading);
+
 
   const hotelCards = useMemo(
     () => [
@@ -68,8 +67,7 @@ export const HotelCategoryCards: React.FC<HotelCategoryCardsProps> = ({
     [hotelCards]
   );
 
-  console.log("[HotelCategoryCards] All cards:", hotelCards);
-  console.log("[HotelCategoryCards] Visible cards:", visibleCards);
+
 
   return (
     <div className="grid grid-cols-2 gap-2.5 px-4">

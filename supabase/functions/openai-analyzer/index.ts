@@ -129,8 +129,14 @@ Deno.serve(async (req) => {
 
   try {
     const requestBody = await req.json();
-    const { task, text, targetLanguage, message_id, original_language, context } =
-      requestBody;
+    const {
+      task,
+      text,
+      targetLanguage,
+      message_id,
+      original_language,
+      context,
+    } = requestBody;
 
     if (!task || !text) {
       return new Response(
@@ -430,7 +436,9 @@ If the answer is not found in the context, say you don't know instead of inventi
             rows: updData,
           };
     } else {
-      console.warn("⚠️ [EDGE FUNCTION] No message_id provided, skipping database update");
+      console.warn(
+        "⚠️ [EDGE FUNCTION] No message_id provided, skipping database update"
+      );
     }
 
     console.log("🎉 [EDGE FUNCTION] Returning response:", {

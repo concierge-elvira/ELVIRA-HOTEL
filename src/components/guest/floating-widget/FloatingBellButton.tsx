@@ -4,21 +4,31 @@
  * Main toggle button with bell icon and animations
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
 
 interface FloatingBellButtonProps {
   isOpen: boolean;
   onClick: () => void;
   hasNotifications?: boolean;
+  shouldShake?: boolean;
 }
 
 export const FloatingBellButton: React.FC<FloatingBellButtonProps> = ({
   isOpen,
   onClick,
   hasNotifications = false,
+  shouldShake = false,
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // Trigger animation when shouldShake prop changes
+  useEffect(() => {
+    if (shouldShake) {
+      setIsAnimating(true);
+      setTimeout(() => setIsAnimating(false), 600);
+    }
+  }, [shouldShake]);
 
   const handleClick = () => {
     setIsAnimating(true);

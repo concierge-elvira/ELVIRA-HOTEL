@@ -1,7 +1,10 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGuestSupabaseClient } from "../../services/guestSupabase";
-import type { RealtimeChannel } from "@supabase/supabase-js";
+import type {
+  RealtimeChannel,
+  RealtimePostgresChangesPayload,
+} from "@supabase/supabase-js";
 
 interface UseGuestRealtimeSubscriptionParams {
   table: string;
@@ -30,12 +33,7 @@ export function useGuestRealtimeSubscription({
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    console.log(
-      `[Guest Realtime] Effect triggered for table: ${table}, enabled: ${enabled}, filter: ${filter}`
-    );
-
     if (!enabled) {
-      console.log(`[Guest Realtime] Subscription disabled for ${table}`);
       return;
     }
 
@@ -43,12 +41,18 @@ export function useGuestRealtimeSubscription({
     const guestSupabase = getGuestSupabaseClient(); // Create client once per effect
 
     const setupSubscription = () => {
-      const channelName = `guest-${table}-changes-${Date.now()}`;
-      console.log(`[Guest Realtime] Creating channel: ${channelName}`);
-      console.log(`[Guest Realtime] Filter: ${filter}`);
+      // Create truly unique channel name using timestamp + random string
+      const channelName = `guest-${table}-${
+        filter || "all"
+      }-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       // Build the postgres_changes config
-      const changesConfig: Record<string, unknown> = {
+      const changesConfig: {
+        event: "*";
+        schema: "public";
+        table: string;
+        filter?: string;
+      } = {
         event: "*",
         schema: "public",
         table,
@@ -59,58 +63,40 @@ export function useGuestRealtimeSubscription({
         changesConfig.filter = filter;
       }
 
-      console.log(`[Guest Realtime] Changes config:`, changesConfig);
-
       channel = guestSupabase
         .channel(channelName)
-        .on("postgres_changes", changesConfig, (payload) => {
-          console.log(`[Guest Realtime] 🔔 ${table} change detected:`, payload);
-          console.log(
-            `[Guest Realtime] Event type: ${payload.eventType}, Table: ${payload.table}`
-          );
+        .on(
+          "postgres_changes" as never,
+          changesConfig,
+          (
+            payload: RealtimePostgresChangesPayload<Record<string, unknown>>
+          ) => {
+            console.log(`[Realtime] 🔔 ${table} ${payload.eventType}`);
 
-          // Call custom handlers
-          if (payload.eventType === "INSERT" && onInsert) {
-            console.log(`[Guest Realtime] Calling onInsert handler`);
-            onInsert(payload.new);
-          } else if (payload.eventType === "UPDATE" && onUpdate) {
-            console.log(`[Guest Realtime] Calling onUpdate handler`);
-            onUpdate(payload.new);
-          } else if (payload.eventType === "DELETE" && onDelete) {
-            console.log(`[Guest Realtime] Calling onDelete handler`);
-            onDelete(payload.old);
+            // Call custom handlers
+            if (payload.eventType === "INSERT" && onInsert) {
+              onInsert(payload.new);
+            } else if (payload.eventType === "UPDATE" && onUpdate) {
+              onUpdate(payload.new);
+            } else if (payload.eventType === "DELETE" && onDelete) {
+              onDelete(payload.old);
+            }
+
+            // Invalidate the query to refetch data
+            queryClient.invalidateQueries({ queryKey });
           }
-
-          // Invalidate the query to refetch data
-          console.log(
-            `[Guest Realtime] Invalidating query with key:`,
-            queryKey
-          );
-          queryClient.invalidateQueries({ queryKey });
-        })
+        )
         .subscribe((status, err) => {
-          console.log(
-            `[Guest Realtime] 📡 ${table} subscription status:`,
-            status
-          );
           if (err) {
-            console.error(`[Guest Realtime] ❌ Subscription error:`, err);
+            console.error(`[Realtime] ❌ ${table} error:`, err);
           }
-          if (status === "SUBSCRIBED") {
-            console.log(
-              `[Guest Realtime] ✅ Successfully subscribed to ${table}`
-            );
-          } else if (status === "CHANNEL_ERROR") {
+          if (status === "CHANNEL_ERROR") {
             console.error(
-              `[Guest Realtime] ❌ Channel error for ${table}`,
-              err
+              `[Realtime] ❌ ${table} channel error -`,
+              err?.message || err
             );
           } else if (status === "TIMED_OUT") {
-            console.error(
-              `[Guest Realtime] ⏱️ Subscription timed out for ${table}`
-            );
-          } else if (status === "CLOSED") {
-            console.log(`[Guest Realtime] 🔒 Channel closed for ${table}`);
+            console.error(`[Realtime] ⏱️ ${table} timeout`);
           }
         });
     };
@@ -118,10 +104,8 @@ export function useGuestRealtimeSubscription({
     setupSubscription();
 
     return () => {
-      console.log(`[Guest Realtime] 🧹 Cleaning up subscription for ${table}`);
       if (channel) {
         guestSupabase.removeChannel(channel);
-        console.log(`[Guest Realtime] ✅ Channel removed for ${table}`);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

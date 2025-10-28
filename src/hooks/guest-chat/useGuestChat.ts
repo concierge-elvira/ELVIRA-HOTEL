@@ -204,9 +204,10 @@ export function useSendGuestChatMessage() {
       // Call OpenAI analyzer edge function asynchronously (don't await)
       // This runs in the background so the message sends immediately
       // Normalize languages to ISO codes for consistent translation
-      const normalizedOriginalLanguage = normalizeLanguageToCode(originalLanguage);
+      const normalizedOriginalLanguage =
+        normalizeLanguageToCode(originalLanguage);
       const normalizedTargetLanguage = normalizeLanguageToCode(targetLanguage);
-      
+
       console.log("🤖 [GUEST CHAT] Calling OpenAI analyzer (async)...", {
         messageId: insertedMessage.id,
         task: "full_pipeline",

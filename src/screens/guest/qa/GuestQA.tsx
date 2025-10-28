@@ -6,11 +6,13 @@ import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements"
 interface GuestQAProps {
   onNavigate?: (path: string) => void;
   currentPath?: string;
+  onClockClick?: () => void;
 }
 
 export const GuestQA: React.FC<GuestQAProps> = ({
   onNavigate,
   currentPath = "/guest/qa",
+  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
   const { data: announcements } = useAnnouncements(
@@ -42,6 +44,7 @@ export const GuestQA: React.FC<GuestQAProps> = ({
       announcements={activeAnnouncements}
       currentPath={currentPath}
       onNavigate={onNavigate}
+      onClockClick={onClockClick}
     >
       <div className="px-4 py-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Q&A</h2>

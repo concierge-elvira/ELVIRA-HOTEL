@@ -23,11 +23,13 @@ import { useGuestEmergencyContacts } from "../../../hooks/guest-management/emerg
 interface GuestHomeProps {
   onNavigate?: (path: string) => void;
   currentPath?: string;
+  onClockClick?: () => void;
 }
 
 export const GuestHome: React.FC<GuestHomeProps> = ({
   onNavigate,
   currentPath = "/guest/home",
+  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
   const { data: announcements } = useAnnouncements(
@@ -87,6 +89,7 @@ export const GuestHome: React.FC<GuestHomeProps> = ({
       announcements={activeAnnouncements}
       currentPath={currentPath}
       onNavigate={onNavigate}
+      onClockClick={onClockClick}
     >
       {/* Stay Details Card */}
       <StayDetailsCard

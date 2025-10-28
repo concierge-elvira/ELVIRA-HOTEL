@@ -13,6 +13,9 @@ interface MenuCategorySectionProps {
   items: MenuItemCardProps[];
   onAddClick?: (id: string) => void;
   onCardClick?: (id: string) => void;
+  onIncrement?: (id: string) => void;
+  onDecrement?: (id: string) => void;
+  onRemoveClick?: (id: string) => void;
 }
 
 export const MenuCategorySection: React.FC<MenuCategorySectionProps> = ({
@@ -20,6 +23,9 @@ export const MenuCategorySection: React.FC<MenuCategorySectionProps> = ({
   items,
   onAddClick,
   onCardClick,
+  onIncrement,
+  onDecrement,
+  onRemoveClick,
 }) => {
   if (!items || items.length === 0) {
     return null;
@@ -43,6 +49,9 @@ export const MenuCategorySection: React.FC<MenuCategorySectionProps> = ({
             {...item}
             onAddClick={onAddClick}
             onCardClick={onCardClick}
+            onIncrement={onIncrement}
+            onDecrement={onDecrement}
+            onRemoveClick={onRemoveClick}
           />
         ))}
       </div>

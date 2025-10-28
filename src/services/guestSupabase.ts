@@ -33,8 +33,7 @@ export function getGuestSupabaseClient() {
 
   const session = getGuestSession();
 
-  console.log("[Guest Supabase] Creating new client instance");
-  console.log("[Guest Supabase] Has guest token:", !!session?.token);
+
 
   if (session?.token) {
     // Create client with guest JWT token
@@ -77,7 +76,7 @@ export function getGuestSupabaseClient() {
     );
   }
 
-  console.log("[Guest Supabase] Client created successfully");
+
   return guestSupabaseInstance;
 }
 
@@ -86,7 +85,7 @@ export function getGuestSupabaseClient() {
  * Useful when guest logs out or token changes
  */
 export function resetGuestSupabaseClient() {
-  console.log("[Guest Supabase] Resetting client instance");
+
   if (guestSupabaseInstance) {
     // Remove all channels before resetting
     const channels = guestSupabaseInstance.getChannels();

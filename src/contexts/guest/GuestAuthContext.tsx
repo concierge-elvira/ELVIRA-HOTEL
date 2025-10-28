@@ -52,10 +52,7 @@ export function GuestAuthProvider({ children }: { children: ReactNode }) {
     const currentToken = guestSession.token;
     const currentHotelData = guestSession.hotelData;
 
-    console.log(
-      "[Guest Auth] Setting up realtime subscription for guest:",
-      guestId
-    );
+
 
     let channel: RealtimeChannel;
     const guestSupabase = getGuestSupabaseClient();
@@ -72,7 +69,7 @@ export function GuestAuthProvider({ children }: { children: ReactNode }) {
             filter: `id=eq.${guestId}`,
           },
           (payload) => {
-            console.log("[Guest Auth] Guest data updated:", payload);
+
 
             // Update the session with new guest data
             if (payload.new) {
@@ -95,28 +92,22 @@ export function GuestAuthProvider({ children }: { children: ReactNode }) {
                   currentHotelData
                 );
 
-                console.log(
-                  "[Guest Auth] ✅ Guest session updated with new data"
-                );
+
                 return updatedSession;
               });
             }
           }
         )
         .subscribe((status) => {
-          console.log("[Guest Auth] Subscription status:", status);
-          if (status === "SUBSCRIBED") {
-            console.log(
-              "[Guest Auth] ✅ Successfully subscribed to guest data updates"
-            );
-          }
+
+
         });
     };
 
     setupSubscription();
 
     return () => {
-      console.log("[Guest Auth] Cleaning up guest data subscription");
+
       if (channel) {
         guestSupabase.removeChannel(channel);
       }

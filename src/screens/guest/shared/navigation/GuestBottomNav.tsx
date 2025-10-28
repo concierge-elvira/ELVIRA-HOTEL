@@ -6,7 +6,7 @@ import {
   ShoppingBag,
   LogOut,
 } from "lucide-react";
-import { useGuestAuth } from "../../../../contexts/guest";
+import { useGuestAuth, useGuestCart } from "../../../../contexts/guest";
 import { useGuestHotelSettings } from "../../../../hooks/guest-management/settings/useGuestHotelSettings";
 
 interface NavItem {
@@ -16,6 +16,7 @@ interface NavItem {
   path: string;
   isAction?: boolean;
   enabled?: boolean;
+  badgeCount?: number;
 }
 
 interface GuestBottomNavProps {
@@ -28,11 +29,11 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
   onNavigate,
 }) => {
   const { signOut, guestSession } = useGuestAuth();
+  const { amenityCartCount, restaurantCartCount, shopCartCount } =
+    useGuestCart();
   const { data: hotelSettings } = useGuestHotelSettings(
     guestSession?.guestData?.hotel_id
   );
-
-  console.log("[GuestBottomNav] Hotel settings received:", hotelSettings);
 
   const navItems: NavItem[] = useMemo(
     () => [
@@ -49,6 +50,7 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
         icon: <ConciergeBell className="w-6 h-6" />,
         path: "/guest/services",
         enabled: hotelSettings?.amenitiesEnabled ?? true,
+        badgeCount: amenityCartCount,
       },
       {
         id: "dine-in",
@@ -56,6 +58,7 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
         icon: <UtensilsCrossed className="w-6 h-6" />,
         path: "/guest/restaurant",
         enabled: hotelSettings?.restaurantEnabled ?? true,
+        badgeCount: restaurantCartCount,
       },
       {
         id: "shop",
@@ -63,6 +66,7 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
         icon: <ShoppingBag className="w-6 h-6" />,
         path: "/guest/shop",
         enabled: hotelSettings?.shopEnabled ?? true,
+        badgeCount: shopCartCount,
       },
       {
         id: "logout",
@@ -73,7 +77,7 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
         enabled: true, // Logout is always enabled
       },
     ],
-    [hotelSettings]
+    [hotelSettings, amenityCartCount, restaurantCartCount, shopCartCount]
   );
 
   // Filter navigation items based on settings
@@ -81,9 +85,6 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
     () => navItems.filter((item) => item.enabled),
     [navItems]
   );
-
-  console.log("[GuestBottomNav] All nav items:", navItems);
-  console.log("[GuestBottomNav] Visible nav items:", visibleNavItems);
 
   const handleNavClick = (item: NavItem) => {
     if (item.isAction && item.id === "logout") {
@@ -111,7 +112,15 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              <div className="scale-90">{item.icon}</div>
+              <div className="relative scale-90">
+                {item.icon}
+                {/* Badge */}
+                {typeof item.badgeCount === "number" && item.badgeCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
+                    {item.badgeCount > 99 ? "99+" : item.badgeCount}
+                  </span>
+                )}
+              </div>
               <span
                 className={`text-xs ${
                   isActive ? "font-semibold" : "font-medium"

@@ -6,7 +6,7 @@
  */
 
 import React from "react";
-import { Plus } from "lucide-react";
+import { Plus, Minus, Check } from "lucide-react";
 import { RecommendedBadge } from "../RecommendedBadge";
 
 export interface MenuItemCardProps {
@@ -19,6 +19,13 @@ export interface MenuItemCardProps {
   onAddClick?: (id: string) => void;
   onCardClick?: (id: string) => void;
   isRecommended?: boolean;
+  // Quantity counter props
+  quantity?: number;
+  onIncrement?: (id: string) => void;
+  onDecrement?: (id: string) => void;
+  // Amenity added state
+  isAdded?: boolean;
+  onRemoveClick?: (id: string) => void;
 }
 
 export const MenuItemCard: React.FC<MenuItemCardProps> = ({
@@ -30,6 +37,11 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
   isRecommended,
   onAddClick,
   onCardClick,
+  quantity,
+  onIncrement,
+  onDecrement,
+  isAdded,
+  onRemoveClick,
 }) => {
   const handleCardClick = () => {
     if (onCardClick) {
@@ -43,6 +55,30 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
       onAddClick(id);
     }
   };
+
+  const handleIncrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onIncrement) {
+      onIncrement(id);
+    }
+  };
+
+  const handleDecrement = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onDecrement) {
+      onDecrement(id);
+    }
+  };
+
+  const handleRemoveClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onRemoveClick) {
+      onRemoveClick(id);
+    }
+  };
+
+  // Show quantity counter if quantity is defined and > 0
+  const showQuantityCounter = quantity !== undefined && quantity > 0;
 
   return (
     <div
@@ -64,15 +100,45 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
                 }}
               />
             </div>
-            {/* Add Button - Bottom Right of Image */}
-            {onAddClick && (
+            {/* Quantity Counter or Add Button - Bottom Right of Image */}
+            {showQuantityCounter ? (
+              <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white rounded-full shadow-md border border-gray-200 px-1">
+                <button
+                  onClick={handleDecrement}
+                  className="w-7 h-7 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus size={14} />
+                </button>
+                <span className="text-sm font-semibold text-gray-900 min-w-5 text-center">
+                  {quantity}
+                </span>
+                <button
+                  onClick={handleIncrement}
+                  className="w-7 h-7 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                  aria-label="Increase quantity"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+            ) : isAdded ? (
               <button
-                onClick={handleAddClick}
-                className="absolute bottom-2 right-2 w-8 h-8 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center hover:bg-blue-50 hover:border-blue-500 transition-all duration-200 shadow-sm"
-                aria-label={`Add ${title}`}
+                onClick={handleRemoveClick}
+                className="absolute bottom-2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-sm hover:bg-green-600 active:bg-green-700 transition-colors"
+                aria-label={`Remove ${title}`}
               >
-                <Plus size={16} className="text-blue-600" />
+                <Check size={18} className="text-white" />
               </button>
+            ) : (
+              onAddClick && (
+                <button
+                  onClick={handleAddClick}
+                  className="absolute bottom-2 right-2 w-8 h-8 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center hover:bg-blue-50 hover:border-blue-500 transition-all duration-200 shadow-sm"
+                  aria-label={`Add ${title}`}
+                >
+                  <Plus size={16} className="text-blue-600" />
+                </button>
+              )
             )}
           </div>
         )}

@@ -8,6 +8,10 @@ import { GuestPlaces } from "./places";
 import { GuestTours } from "./tours";
 import { GuestWellness } from "./wellness";
 import { GuestGastronomy } from "./gastronomy";
+import { RequestHistoryBottomSheet } from "./request-history";
+import { useGuestAuth } from "../../contexts/guest";
+import { GuestNotificationProvider } from "../../contexts/guest/GuestNotificationContext";
+import { GuestCartProvider } from "../../contexts/guest/GuestCartContext";
 
 type GuestRoute =
   | "/guest/home"
@@ -23,20 +27,38 @@ type GuestRoute =
 
 export const GuestRouter: React.FC = () => {
   const [currentRoute, setCurrentRoute] = useState<GuestRoute>("/guest/home");
+  const [isRequestHistoryOpen, setIsRequestHistoryOpen] = useState(false);
+  const { guestSession } = useGuestAuth();
 
   const handleNavigate = (path: string) => {
     setCurrentRoute(path as GuestRoute);
+  };
+
+  const handleClockClick = () => {
+    setIsRequestHistoryOpen(true);
+  };
+
+  const handleCloseRequestHistory = () => {
+    setIsRequestHistoryOpen(false);
   };
 
   const renderPage = () => {
     switch (currentRoute) {
       case "/guest/home":
         return (
-          <GuestHome onNavigate={handleNavigate} currentPath={currentRoute} />
+          <GuestHome
+            onNavigate={handleNavigate}
+            currentPath={currentRoute}
+            onClockClick={handleClockClick}
+          />
         );
       case "/guest/shop":
         return (
-          <GuestShop onNavigate={handleNavigate} currentPath={currentRoute} />
+          <GuestShop
+            onNavigate={handleNavigate}
+            currentPath={currentRoute}
+            onClockClick={handleClockClick}
+          />
         );
       case "/guest/amenities":
       case "/guest/services":
@@ -44,6 +66,7 @@ export const GuestRouter: React.FC = () => {
           <GuestAmenities
             onNavigate={handleNavigate}
             currentPath={currentRoute}
+            onClockClick={handleClockClick}
           />
         );
       case "/guest/restaurant":
@@ -51,25 +74,39 @@ export const GuestRouter: React.FC = () => {
           <GuestRestaurant
             onNavigate={handleNavigate}
             currentPath={currentRoute}
+            onClockClick={handleClockClick}
           />
         );
       case "/guest/qa":
         return (
-          <GuestQA onNavigate={handleNavigate} currentPath={currentRoute} />
+          <GuestQA
+            onNavigate={handleNavigate}
+            currentPath={currentRoute}
+            onClockClick={handleClockClick}
+          />
         );
       case "/guest/places":
         return (
-          <GuestPlaces onNavigate={handleNavigate} currentPath={currentRoute} />
+          <GuestPlaces
+            onNavigate={handleNavigate}
+            currentPath={currentRoute}
+            onClockClick={handleClockClick}
+          />
         );
       case "/guest/tours":
         return (
-          <GuestTours onNavigate={handleNavigate} currentPath={currentRoute} />
+          <GuestTours
+            onNavigate={handleNavigate}
+            currentPath={currentRoute}
+            onClockClick={handleClockClick}
+          />
         );
       case "/guest/wellness":
         return (
           <GuestWellness
             onNavigate={handleNavigate}
             currentPath={currentRoute}
+            onClockClick={handleClockClick}
           />
         );
       case "/guest/gastronomy":
@@ -77,14 +114,35 @@ export const GuestRouter: React.FC = () => {
           <GuestGastronomy
             onNavigate={handleNavigate}
             currentPath={currentRoute}
+            onClockClick={handleClockClick}
           />
         );
       default:
         return (
-          <GuestHome onNavigate={handleNavigate} currentPath={currentRoute} />
+          <GuestHome
+            onNavigate={handleNavigate}
+            currentPath={currentRoute}
+            onClockClick={handleClockClick}
+          />
         );
     }
   };
 
-  return <>{renderPage()}</>;
+  return (
+    <GuestCartProvider>
+      <GuestNotificationProvider>
+        {renderPage()}
+
+        {/* Request History Bottom Sheet */}
+        {guestSession && (
+          <RequestHistoryBottomSheet
+            isOpen={isRequestHistoryOpen}
+            onClose={handleCloseRequestHistory}
+            guestId={guestSession.guestData.id}
+            hotelId={guestSession.guestData.hotel_id}
+          />
+        )}
+      </GuestNotificationProvider>
+    </GuestCartProvider>
+  );
 };

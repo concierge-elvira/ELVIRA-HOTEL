@@ -241,7 +241,7 @@ export function useSendGuestMessage() {
       // Normalize languages to ISO codes for consistent translation
       const normalizedHotelLanguage = normalizeLanguageToCode(hotelLanguage);
       const normalizedGuestLanguage = normalizeLanguageToCode(guestLanguage);
-      
+
       console.log("🤖 [HOTEL CHAT] Calling OpenAI translator (async)...", {
         messageId: data.id,
         task: "translate",

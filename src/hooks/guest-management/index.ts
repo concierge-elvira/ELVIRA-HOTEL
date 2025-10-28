@@ -15,3 +15,4 @@ export * from "./shop";
 export * from "./gastronomy";
 export * from "./wellness";
 export * from "./tours";
+export * from "./request-history";
