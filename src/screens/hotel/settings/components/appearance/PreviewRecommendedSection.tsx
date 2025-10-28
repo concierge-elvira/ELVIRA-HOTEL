@@ -5,8 +5,17 @@
  */
 
 import React from "react";
+import {
+  useAppearance,
+  getBorderRadiusClass,
+  getCardStyleClass,
+} from "./contexts/AppearanceContext";
 
 export const PreviewRecommendedSection: React.FC = () => {
+  const { config } = useAppearance();
+  const borderRadiusClass = getBorderRadiusClass(config.shapes.borderRadius);
+  const cardStyleClass = getCardStyleClass(config.shapes.cardStyle);
+
   const mockItems = [
     {
       id: "1",
@@ -36,10 +45,30 @@ export const PreviewRecommendedSection: React.FC = () => {
     <section className="py-4">
       {/* Header */}
       <div className="px-4 mb-3">
-        <h2 className="text-lg font-bold text-gray-900">
-          Recommended <span className="text-blue-600 font-bold">for You</span>
+        <h2
+          className="font-bold"
+          style={{
+            fontSize: config.typography.fontSize.heading,
+            color: config.colors.text.primary,
+          }}
+        >
+          Recommended{" "}
+          <span
+            style={{
+              color: config.colors.primary,
+              fontWeight: config.typography.fontWeight.bold,
+            }}
+          >
+            for You
+          </span>
         </h2>
-        <p className="text-sm text-gray-600 mt-1">
+        <p
+          className="mt-1"
+          style={{
+            fontSize: config.typography.fontSize.small,
+            color: config.colors.text.secondary,
+          }}
+        >
           Curated selections from our hotel services
         </p>
       </div>
@@ -47,27 +76,51 @@ export const PreviewRecommendedSection: React.FC = () => {
       {/* Horizontal Scrollable Cards */}
       <div className="relative">
         {/* Left fade effect */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+        <div
+          className="absolute left-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
+          style={{
+            background: `linear-gradient(to right, ${"#f9fafb"} 0%, transparent 100%)`,
+          }}
+        />
 
         {/* Right fade effect */}
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+        <div
+          className="absolute right-0 top-0 bottom-0 w-8 z-10 pointer-events-none"
+          style={{
+            background: `linear-gradient(to left, ${"#f9fafb"} 0%, transparent 100%)`,
+          }}
+        />
 
         <div className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-3 px-4 pb-2">
             {mockItems.map((item) => (
               <div
                 key={item.id}
-                className="shrink-0 w-40 bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
+                className={`shrink-0 w-40 ${borderRadiusClass} overflow-hidden ${cardStyleClass} transition-shadow duration-200`}
+                style={{ backgroundColor: "#ffffff" }}
               >
                 {/* Image */}
-                <div className="relative h-32 bg-gray-200">
+                <div
+                  className={`relative h-32 ${borderRadiusClass}`}
+                  style={{
+                    backgroundColor: `${config.colors.text.secondary}20`,
+                  }}
+                >
                   <img
                     src={item.imageUrl}
                     alt={item.title}
                     className="w-full h-full object-cover"
                   />
                   {item.price && (
-                    <div className="absolute bottom-2 left-2 bg-gray-900 bg-opacity-75 text-white px-2 py-1 rounded text-xs font-semibold">
+                    <div
+                      className={`absolute bottom-2 left-2 bg-opacity-75 px-2 py-1 ${borderRadiusClass}`}
+                      style={{
+                        backgroundColor: `${config.colors.text.primary}CC`,
+                        color: config.colors.text.inverse,
+                        fontSize: config.typography.fontSize.small,
+                        fontWeight: config.typography.fontWeight.semibold,
+                      }}
+                    >
                       ${item.price.toFixed(2)}
                     </div>
                   )}
@@ -75,10 +128,22 @@ export const PreviewRecommendedSection: React.FC = () => {
 
                 {/* Content */}
                 <div className="p-3">
-                  <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">
+                  <h3
+                    className="font-semibold line-clamp-2 mb-1"
+                    style={{
+                      fontSize: config.typography.fontSize.small,
+                      color: config.colors.text.primary,
+                    }}
+                  >
                     {item.title}
                   </h3>
-                  <p className="text-xs text-gray-600 line-clamp-2">
+                  <p
+                    className="line-clamp-2"
+                    style={{
+                      fontSize: config.typography.fontSize.small,
+                      color: config.colors.text.secondary,
+                    }}
+                  >
                     {item.description}
                   </p>
                 </div>

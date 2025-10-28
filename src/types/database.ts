@@ -1145,6 +1145,89 @@ export type Database = {
           }
         ];
       };
+      hotel_appearance_settings: {
+        Row: {
+          about_us_background_color: string;
+          border_radius: string;
+          card_style: string;
+          color_primary: string;
+          color_text_inverse: string;
+          color_text_primary: string;
+          color_text_secondary: string;
+          created_at: string | null;
+          font_family: string;
+          font_size_base: string;
+          font_size_heading: string;
+          font_size_small: string;
+          font_weight_bold: string;
+          font_weight_medium: string;
+          font_weight_normal: string;
+          font_weight_semibold: string;
+          hotel_id: string;
+          icon_size: string;
+          id: string;
+          stay_card_gradient_from: string;
+          stay_card_gradient_to: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          about_us_background_color?: string;
+          border_radius?: string;
+          card_style?: string;
+          color_primary?: string;
+          color_text_inverse?: string;
+          color_text_primary?: string;
+          color_text_secondary?: string;
+          created_at?: string | null;
+          font_family?: string;
+          font_size_base?: string;
+          font_size_heading?: string;
+          font_size_small?: string;
+          font_weight_bold?: string;
+          font_weight_medium?: string;
+          font_weight_normal?: string;
+          font_weight_semibold?: string;
+          hotel_id: string;
+          icon_size?: string;
+          id?: string;
+          stay_card_gradient_from?: string;
+          stay_card_gradient_to?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          about_us_background_color?: string;
+          border_radius?: string;
+          card_style?: string;
+          color_primary?: string;
+          color_text_inverse?: string;
+          color_text_primary?: string;
+          color_text_secondary?: string;
+          created_at?: string | null;
+          font_family?: string;
+          font_size_base?: string;
+          font_size_heading?: string;
+          font_size_small?: string;
+          font_weight_bold?: string;
+          font_weight_medium?: string;
+          font_weight_normal?: string;
+          font_weight_semibold?: string;
+          hotel_id?: string;
+          icon_size?: string;
+          id?: string;
+          stay_card_gradient_from?: string;
+          stay_card_gradient_to?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "hotel_appearance_settings_hotel_id_fkey";
+            columns: ["hotel_id"];
+            isOneToOne: false;
+            referencedRelation: "hotels";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       hotel_staff: {
         Row: {
           consent_date: string | null;

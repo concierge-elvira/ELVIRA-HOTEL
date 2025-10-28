@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { TabsWithoutSearch, type TabItem } from "../../../components/ui";
 import { ProfileTab, ControlPanel, AppearanceTab } from "./components";
+import { AppearanceActions } from "./components/appearance/settings/AppearanceSettings";
+import { AppearanceProvider } from "./components/appearance/contexts/AppearanceContext";
 import {
   PageContent,
   PageHeader,
@@ -148,6 +150,13 @@ export function Settings() {
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        actions={
+          activeTab === "appearance" ? (
+            <AppearanceProvider>
+              <AppearanceActions />
+            </AppearanceProvider>
+          ) : undefined
+        }
       />
 
       {/* Content Area */}

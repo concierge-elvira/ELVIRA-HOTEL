@@ -1,0 +1,1 @@
+export { useHotelAppearanceSettings } from "./useHotelAppearanceSettings";

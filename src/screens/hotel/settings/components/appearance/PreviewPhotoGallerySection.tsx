@@ -5,8 +5,15 @@
  */
 
 import React from "react";
+import {
+  useAppearance,
+  getBorderRadiusClass,
+} from "./contexts/AppearanceContext";
 
 export const PreviewPhotoGallerySection: React.FC = () => {
+  const { config } = useAppearance();
+  const borderRadiusClass = getBorderRadiusClass(config.shapes.borderRadius);
+
   const mockPhotos = [
     "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=400",
     "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=400",
@@ -17,9 +24,17 @@ export const PreviewPhotoGallerySection: React.FC = () => {
   ];
 
   return (
-    <section className="py-8 bg-gray-50">
+    <section
+      className="py-8"
+      style={{ backgroundColor: "#ffffff80" }}
+    >
       <div className="px-4 mb-4">
-        <p className="text-sm text-gray-600">
+        <p
+          style={{
+            fontSize: config.typography.fontSize.small,
+            color: config.colors.text.secondary,
+          }}
+        >
           Discover our beautiful spaces and amenities
         </p>
       </div>
@@ -30,7 +45,8 @@ export const PreviewPhotoGallerySection: React.FC = () => {
           {mockPhotos.map((photo, index) => (
             <div
               key={index}
-              className="shrink-0 w-64 h-48 bg-gray-200 rounded-lg overflow-hidden"
+              className={`shrink-0 w-64 h-48 ${borderRadiusClass} overflow-hidden`}
+              style={{ backgroundColor: `${config.colors.text.secondary}20` }}
             >
               <img
                 src={photo}

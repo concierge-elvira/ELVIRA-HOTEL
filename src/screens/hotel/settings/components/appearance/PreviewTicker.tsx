@@ -2,6 +2,7 @@
  * Preview Announcement Ticker Component
  *
  * Shows a placeholder for the announcement ticker
+ * Ticker styling is fixed - only velocity could be customizable in the future
  */
 
 import React from "react";
@@ -11,7 +12,7 @@ export const PreviewTicker: React.FC = () => {
     "Welcome to our hotel! Special offer: 20% off spa services this week  •  Breakfast served 7-10 AM daily  •  Pool hours: 6 AM - 10 PM";
 
   return (
-    <div className="bg-gray-900 text-white py-2.5 overflow-hidden">
+    <div className="bg-gray-900 py-2.5 overflow-hidden">
       <style>
         {`
           @keyframes ticker-scroll {
@@ -29,10 +30,10 @@ export const PreviewTicker: React.FC = () => {
       </style>
       <div className="relative flex">
         <div className="flex ticker-animate">
-          <span className="text-sm font-medium whitespace-nowrap px-4">
+          <span className="text-white text-sm font-medium whitespace-nowrap px-4">
             {mockAnnouncement}
           </span>
-          <span className="text-sm font-medium whitespace-nowrap px-4">
+          <span className="text-white text-sm font-medium whitespace-nowrap px-4">
             {mockAnnouncement}
           </span>
         </div>
