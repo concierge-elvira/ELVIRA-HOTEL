@@ -16,6 +16,7 @@ interface FloatingActionButtonProps {
   index: number;
   isVisible: boolean;
   shouldShake?: boolean;
+  badgeCount?: number;
 }
 
 export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
@@ -26,6 +27,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   index,
   isVisible,
   shouldShake = false,
+  badgeCount = 0,
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -59,6 +61,13 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
             isAnimating ? "animate-[swing_0.6s_ease-in-out]" : ""
           }`}
         />
+
+        {/* Badge - more discreet */}
+        {badgeCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 bg-white text-gray-900 text-[10px] font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center shadow-sm border border-gray-200">
+            {badgeCount > 99 ? "99+" : badgeCount}
+          </span>
+        )}
 
         {/* Tooltip */}
         <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-gray-900 text-white text-sm px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">

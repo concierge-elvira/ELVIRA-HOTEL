@@ -34,12 +34,7 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
     guestSession?.guestData?.hotel_id
   );
 
-  console.log(
-    "🏨 [GuestGastronomy] Hotel ID:",
-    guestSession?.guestData?.hotel_id
-  );
-  console.log("📍 [GuestGastronomy] Raw places data:", gastronomyPlaces);
-  console.log("🔄 [GuestGastronomy] Loading:", isLoading);
+
 
   // Extract photo reference from Google Maps URLs
   const extractPhotoReference = (photoRef: string): string | null => {
@@ -67,7 +62,7 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
 
   // Transform places to card format
   const places = useMemo(() => {
-    console.log("🔄 [GuestGastronomy] Transforming places...");
+
     const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY || "";
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,12 +70,6 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
       .map((item: any) => {
         const place = item.thirdparty_places;
 
-        console.log("🔍 [GuestGastronomy] Processing item:", {
-          item_id: item.id,
-          has_place: !!place,
-          place_name: place?.name,
-          place_category: place?.category,
-        });
 
         if (!place) return null;
 
@@ -117,11 +106,8 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
       })
       .filter(Boolean);
 
-    console.log("✅ [GuestGastronomy] Transformed places:", transformed);
-    console.log(
-      "📊 [GuestGastronomy] Number of transformed places:",
-      transformed.length
-    );
+
+
 
     return transformed;
   }, [gastronomyPlaces]);
@@ -157,7 +143,7 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
       })) || [];
 
   const handlePlaceClick = (placeId: string) => {
-    console.log("Place clicked:", placeId);
+
     // Find the full place data from gastronomyPlaces
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const placeData = gastronomyPlaces.find((item: any) => {

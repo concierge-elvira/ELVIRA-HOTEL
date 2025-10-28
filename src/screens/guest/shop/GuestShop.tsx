@@ -130,7 +130,7 @@ export const GuestShop: React.FC<GuestShopProps> = ({
   const handleAddItem = (itemId: string) => {
     const product = products.find((p) => p.id === itemId);
     if (product) {
-      console.log("Add item to shop cart:", product.name);
+      
       addToShopCart({
         id: product.id,
         name: product.name,

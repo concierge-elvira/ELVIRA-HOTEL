@@ -113,12 +113,10 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
         price: amenity.price,
         imageUrl: amenity.image_url || undefined,
       });
-
     }
   };
 
   const handleRemoveItem = (itemId: string) => {
-
     removeFromAmenityCart(itemId);
   };
 
@@ -143,6 +141,7 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
       hotelName={hotelData.name}
       roomNumber={guestData.room_number}
       guestId={guestData.id}
+      hotelId={guestData.hotel_id}
       dndStatus={guestData.dnd_status}
       announcements={activeAnnouncements}
       currentPath={currentPath}

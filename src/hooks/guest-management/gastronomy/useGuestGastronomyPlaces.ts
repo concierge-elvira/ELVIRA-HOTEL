@@ -20,10 +20,7 @@ export function useGuestGastronomyPlaces(hotelId: string | undefined) {
         return [];
       }
 
-      console.log(
-        "🔍 [GuestGastronomy] Fetching gastronomy places for hotel:",
-        hotelId
-      );
+
 
       const guestSupabase = getGuestSupabaseClient();
 
@@ -39,16 +36,13 @@ export function useGuestGastronomyPlaces(hotelId: string | undefined) {
         .eq("hotel_id", hotelId)
         .eq("hotel_approved", true);
 
-      console.log("🔍 [GuestGastronomy] All approved places:", allPlaces);
+
 
       if (allPlaces && allPlaces.length > 0) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const categories = allPlaces
           .map((p: any) => p.thirdparty_places?.category)
-          .filter(Boolean);
-        console.log("📋 [GuestGastronomy] Available categories:", [
-          ...new Set(categories),
-        ]);
+
       }
 
       // Now fetch with category filter - try case-insensitive match
@@ -71,8 +65,7 @@ export function useGuestGastronomyPlaces(hotelId: string | undefined) {
         throw error;
       }
 
-      console.log("✅ [GuestGastronomy] Fetched gastronomy places:", data);
-      console.log("📊 [GuestGastronomy] Number of places:", data?.length || 0);
+
 
       return data || [];
     },

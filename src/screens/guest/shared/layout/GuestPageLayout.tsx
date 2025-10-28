@@ -3,6 +3,10 @@ import { GuestHeader } from "../header";
 import { GuestBottomNav } from "../navigation";
 import { AnnouncementTicker } from "../announcements";
 import { FloatingWidgetMenu } from "../../../../components/guest/floating-widget";
+import {
+  useGuestConversation,
+  useGuestUnreadMessageCount,
+} from "../../../../hooks/guest-chat";
 
 interface GuestPageLayoutProps {
   guestName: string;
@@ -17,7 +21,8 @@ interface GuestPageLayoutProps {
   headerSlot?: React.ReactNode; // Optional slot for search bar or other sticky elements
   onClockClick?: () => void; // Callback for clock/room service button
   onMessageClick?: () => void; // Callback for message button
-  hasNotifications?: boolean; // Show notification badge on bell
+  requestCount?: number; // Number of pending requests to show on bell
+  hotelId?: string; // Hotel ID for fetching conversation
 }
 
 export const GuestPageLayout: React.FC<GuestPageLayoutProps> = ({
@@ -33,8 +38,18 @@ export const GuestPageLayout: React.FC<GuestPageLayoutProps> = ({
   headerSlot,
   onClockClick,
   onMessageClick,
-  hasNotifications = false,
+  requestCount = 0,
+  hotelId,
 }) => {
+  // Fetch guest's conversation
+  const { data: conversation } = useGuestConversation(guestId, hotelId);
+
+  // Get unread message count
+  const { data: messageCount = 0 } = useGuestUnreadMessageCount(
+    conversation?.id,
+    !!conversation?.id
+  );
+
   return (
     <div className="fixed inset-0 flex flex-col bg-gray-50">
       {/* Fixed Header Section (Header + Ticker + Optional Search/Filter) */}
@@ -64,7 +79,8 @@ export const GuestPageLayout: React.FC<GuestPageLayoutProps> = ({
       <FloatingWidgetMenu
         onClockClick={onClockClick}
         onMessageClick={onMessageClick}
-        hasNotifications={hasNotifications}
+        requestCount={requestCount}
+        messageCount={messageCount}
       />
 
       {/* Bottom Navigation - Fixed at bottom */}

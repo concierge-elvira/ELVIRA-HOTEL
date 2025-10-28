@@ -2,12 +2,13 @@
  * Amenity Detail Bottom Sheet
  *
  * Displays full details of an amenity
- * with "Book" or "Request" action button
+ * with add to cart functionality
  */
 
 import React from "react";
 import { GuestBottomSheet } from "../base/GuestBottomSheet";
-import { Calendar, MapPin } from "lucide-react";
+import { MapPin, Plus, Check } from "lucide-react";
+import { useGuestCart } from "../../../../../contexts/guest/GuestCartContext";
 
 export interface AmenityDetailData {
   id: string;
@@ -23,17 +24,23 @@ interface AmenityDetailBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
   amenity: AmenityDetailData | null;
-  onBook?: (amenityId: string) => void;
 }
 
 export const AmenityDetailBottomSheet: React.FC<
   AmenityDetailBottomSheetProps
-> = ({ isOpen, onClose, amenity, onBook }) => {
+> = ({ isOpen, onClose, amenity }) => {
+  const { addToAmenityCart, removeFromAmenityCart, isAmenityInCart } =
+    useGuestCart();
+
   if (!amenity) return null;
 
-  const handleBook = () => {
-    if (onBook) {
-      onBook(amenity.id);
+  const isAdded = isAmenityInCart(amenity.id);
+
+  const handleToggle = () => {
+    if (isAdded) {
+      removeFromAmenityCart(amenity.id);
+    } else {
+      addToAmenityCart(amenity);
     }
   };
 
@@ -98,11 +105,24 @@ export const AmenityDetailBottomSheet: React.FC<
         {/* Fixed Bottom Action Button */}
         <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200">
           <button
-            onClick={handleBook}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg"
+            onClick={handleToggle}
+            className={`w-full font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg ${
+              isAdded
+                ? "bg-green-500 hover:bg-green-600 text-white"
+                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+            }`}
           >
-            <Calendar className="w-5 h-5" />
-            Book Now
+            {isAdded ? (
+              <>
+                <Check className="w-5 h-5" />
+                Added to Cart
+              </>
+            ) : (
+              <>
+                <Plus className="w-5 h-5" />
+                Add to Cart
+              </>
+            )}
           </button>
         </div>
       </div>

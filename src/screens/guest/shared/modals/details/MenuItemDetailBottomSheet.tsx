@@ -2,12 +2,13 @@
  * Menu Item Detail Bottom Sheet
  *
  * Displays full details of a menu item (restaurant/room service)
- * with "Add to Cart" action button
+ * with quantity counter and add to cart functionality
  */
 
 import React from "react";
 import { GuestBottomSheet } from "../base/GuestBottomSheet";
-import { ShoppingCart, Utensils } from "lucide-react";
+import { Utensils, Plus, Minus } from "lucide-react";
+import { useGuestCart } from "../../../../../contexts/guest/GuestCartContext";
 
 export interface MenuItemDetailData {
   id: string;
@@ -26,20 +27,38 @@ interface MenuItemDetailBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
   item: MenuItemDetailData | null;
-  onAddToCart?: (itemId: string) => void;
 }
 
 export const MenuItemDetailBottomSheet: React.FC<
   MenuItemDetailBottomSheetProps
-> = ({ isOpen, onClose, item, onAddToCart }) => {
+> = ({ isOpen, onClose, item }) => {
+  const {
+    addToRestaurantCart,
+    incrementRestaurantItem,
+    decrementRestaurantItem,
+    getRestaurantItemQuantity,
+  } = useGuestCart();
+
   if (!item) return null;
 
-  const handleAddToCart = () => {
-    if (onAddToCart) {
-      onAddToCart(item.id);
-    }
-    // Optionally close the bottom sheet after adding
-    // onClose();
+  const quantity = getRestaurantItemQuantity(item.id);
+
+  const handleAdd = () => {
+    addToRestaurantCart({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: 1,
+      imageUrl: item.image_url || undefined,
+    });
+  };
+
+  const handleIncrement = () => {
+    incrementRestaurantItem(item.id);
+  };
+
+  const handleDecrement = () => {
+    decrementRestaurantItem(item.id);
   };
 
   return (
@@ -122,13 +141,38 @@ export const MenuItemDetailBottomSheet: React.FC<
 
         {/* Fixed Bottom Action Button */}
         <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200">
-          <button
-            onClick={handleAddToCart}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg"
-          >
-            <ShoppingCart className="w-5 h-5" />
-            Add to Cart
-          </button>
+          {quantity > 0 ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleDecrement}
+                className="w-12 h-12 flex items-center justify-center bg-white border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors shadow-lg"
+                aria-label="Decrease quantity"
+              >
+                <Minus size={20} />
+              </button>
+              <div className="flex-1 text-center">
+                <span className="text-2xl font-bold text-gray-900">
+                  {quantity}
+                </span>
+                <p className="text-sm text-gray-500">in cart</p>
+              </div>
+              <button
+                onClick={handleIncrement}
+                className="w-12 h-12 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors shadow-lg"
+                aria-label="Increase quantity"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAdd}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg"
+            >
+              <Plus className="w-5 h-5" />
+              Add to Cart
+            </button>
+          )}
         </div>
       </div>
     </GuestBottomSheet>

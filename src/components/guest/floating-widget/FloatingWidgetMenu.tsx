@@ -15,13 +15,15 @@ import { useGuestNotification } from "../../../contexts/guest/GuestNotificationC
 interface FloatingWidgetMenuProps {
   onClockClick?: () => void;
   onMessageClick?: () => void;
-  hasNotifications?: boolean;
+  requestCount?: number;
+  messageCount?: number;
 }
 
 export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
   onClockClick = () => console.log("Clock clicked"),
   onMessageClick,
-  hasNotifications = false,
+  requestCount = 0,
+  messageCount = 0,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -51,6 +53,7 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
       onClick: () => handleActionClick(handleMessageClick),
       bgColor: "bg-blue-500",
       shouldShake: false, // Messages don't shake for order updates
+      badgeCount: isOpen ? messageCount : 0, // Show message count only when menu is open
     },
     {
       icon: Clock,
@@ -58,6 +61,7 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
       onClick: () => handleActionClick(onClockClick),
       bgColor: "bg-purple-500",
       shouldShake: shouldShakeClock, // Shake when order status changes
+      badgeCount: 0, // Clock doesn't show badge
     },
   ];
 
@@ -84,6 +88,7 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
               index={index}
               isVisible={isOpen}
               shouldShake={action.shouldShake}
+              badgeCount={action.badgeCount}
             />
           ))}
 
@@ -91,8 +96,8 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
           <FloatingBellButton
             isOpen={isOpen}
             onClick={handleToggle}
-            hasNotifications={hasNotifications}
             shouldShake={shouldShakeBell}
+            notificationCount={isOpen ? requestCount : messageCount}
           />
         </div>
       </div>

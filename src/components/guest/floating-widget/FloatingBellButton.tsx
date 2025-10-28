@@ -12,13 +12,14 @@ interface FloatingBellButtonProps {
   onClick: () => void;
   hasNotifications?: boolean;
   shouldShake?: boolean;
+  notificationCount?: number;
 }
 
 export const FloatingBellButton: React.FC<FloatingBellButtonProps> = ({
   isOpen,
   onClick,
-  hasNotifications = false,
   shouldShake = false,
+  notificationCount = 0,
 }) => {
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -50,10 +51,10 @@ export const FloatingBellButton: React.FC<FloatingBellButtonProps> = ({
         }`}
       />
 
-      {/* Notification badge */}
-      {hasNotifications && !isOpen && (
-        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-          !
+      {/* Notification badge - more discreet */}
+      {!isOpen && notificationCount > 0 && (
+        <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center shadow-sm">
+          {notificationCount > 99 ? "99+" : notificationCount}
         </span>
       )}
     </button>

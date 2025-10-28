@@ -97,57 +97,48 @@ export const PlaceDetailBottomSheet: React.FC<PlaceDetailBottomSheetProps> = ({
   onClose,
   place,
 }) => {
-  console.log("🔍 [PlaceDetailBottomSheet] Rendered", {
-    isOpen,
-    hasPlace: !!place,
-    place,
-  });
-
   if (!place) {
-    console.log("⚠️ [PlaceDetailBottomSheet] No place data provided");
     return null;
   }
 
   const googleData = place.google_data;
-  console.log("📊 [PlaceDetailBottomSheet] Google Data:", googleData);
-  console.log("📊 [PlaceDetailBottomSheet] Available fields:", {
-    hasAddress: !!googleData.formatted_address,
-    hasVicinity: !!googleData.vicinity,
-    hasRating: !!googleData.rating,
-    hasPhone: !!googleData.formatted_phone_number,
-    hasWebsite: !!googleData.website,
-    hasUrl: !!googleData.url,
-    hasPhotos: !!googleData.photos,
-    hasPhotoReference: !!googleData.photo_reference,
-    hasOpeningHours: !!googleData.opening_hours,
-    hasTypes: !!googleData.types,
-    hasReviews: !!googleData.reviews,
-    hasGeometry: !!googleData.geometry,
-  });
 
-  // Build photo URL - check both photos array and direct photo_reference field
+  // Extract photo reference from Google Maps URLs (same logic as cards)
+  const extractPhotoReference = (photoRef: string): string | null => {
+    if (!photoRef) return null;
+
+    // If it's already a clean reference (no http), return it
+    if (!photoRef.startsWith("http")) {
+      return photoRef;
+    }
+
+    // Try to extract from Google Maps JS API URL format
+    const match = photoRef.match(/[?&]1s([^&]+)/);
+    if (match && match[1]) {
+      return match[1];
+    }
+
+    // Extract from photo_reference parameter
+    const urlMatch = photoRef.match(/photo_reference=([^&]+)/);
+    if (urlMatch && urlMatch[1]) {
+      return urlMatch[1];
+    }
+
+    return null;
+  };
+
+
+
+  // Build photo URL - extract reference and rebuild URL (same as cards)
   let photoUrl: string | null = null;
-  const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY || "";
 
-  console.log(
-    "🖼️ [PlaceDetailBottomSheet] Photo reference:",
-    googleData.photo_reference
-  );
-  console.log("🖼️ [PlaceDetailBottomSheet] Photos array:", googleData.photos);
 
   if (googleData.photo_reference) {
-    // Check if photo_reference is already a full URL
-    if (googleData.photo_reference.startsWith("http")) {
-      photoUrl = googleData.photo_reference;
-      console.log(
-        "🖼️ [PlaceDetailBottomSheet] Using direct photo_reference as full URL"
-      );
-    } else {
-      // It's just a reference ID, build the URL
-      photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${googleData.photo_reference}&key=${GOOGLE_API_KEY}`;
-      console.log(
-        "🖼️ [PlaceDetailBottomSheet] Building URL from photo_reference"
-      );
+    const photoRef = extractPhotoReference(googleData.photo_reference);
+    if (photoRef) {
+      photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photoRef}&key=${GOOGLE_API_KEY}`;
+
     }
   } else if (
     googleData.photos &&
@@ -155,24 +146,16 @@ export const PlaceDetailBottomSheet: React.FC<PlaceDetailBottomSheetProps> = ({
     googleData.photos.length > 0
   ) {
     const firstPhoto = googleData.photos[0];
+    if (firstPhoto.photo_reference) {
+      const photoRef = extractPhotoReference(firstPhoto.photo_reference);
+      if (photoRef) {
+        photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${photoRef}&key=${GOOGLE_API_KEY}`;
 
-    // Check if photo_reference in array is a full URL or just a reference
-    if (typeof firstPhoto.photo_reference === "string") {
-      if (firstPhoto.photo_reference.startsWith("http")) {
-        photoUrl = firstPhoto.photo_reference;
-        console.log(
-          "🖼️ [PlaceDetailBottomSheet] Using photos array as full URL"
-        );
-      } else {
-        photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${firstPhoto.photo_reference}&key=${GOOGLE_API_KEY}`;
-        console.log(
-          "🖼️ [PlaceDetailBottomSheet] Building URL from photos array"
-        );
       }
     }
   }
 
-  console.log("🖼️ [PlaceDetailBottomSheet] Final Photo URL:", photoUrl);
+
 
   // Calculate distance if hotel coordinates are provided
   let distance: string | null = null;

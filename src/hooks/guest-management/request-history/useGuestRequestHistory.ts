@@ -73,11 +73,11 @@ export function useGuestRequestHistory(
     queryKey,
     enabled: !!guestId && !!hotelId,
     onUpdate: () => {
-      console.log("[Request History] ⚡ Status changed");
+
       onStatusChange?.();
     },
     onInsert: () => {
-      console.log("[Request History] ⚡ New order");
+
       onStatusChange?.();
     },
   });
@@ -89,11 +89,11 @@ export function useGuestRequestHistory(
     queryKey,
     enabled: !!guestId && !!hotelId,
     onUpdate: () => {
-      console.log("[Request History] ⚡ Status changed");
+
       onStatusChange?.();
     },
     onInsert: () => {
-      console.log("[Request History] ⚡ New order");
+
       onStatusChange?.();
     },
   });
@@ -105,11 +105,11 @@ export function useGuestRequestHistory(
     queryKey,
     enabled: !!guestId && !!hotelId,
     onUpdate: () => {
-      console.log("[Request History] ⚡ Status changed");
+
       onStatusChange?.();
     },
     onInsert: () => {
-      console.log("[Request History] ⚡ New order");
+
       onStatusChange?.();
     },
   });

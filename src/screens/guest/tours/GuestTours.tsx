@@ -136,7 +136,7 @@ export const GuestTours: React.FC<GuestToursProps> = ({
       })) || [];
 
   const handlePlaceClick = (placeId: string) => {
-    console.log("Place clicked:", placeId);
+
     // Find the full place data from toursPlaces
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const placeData = toursPlaces.find((item: any) => {

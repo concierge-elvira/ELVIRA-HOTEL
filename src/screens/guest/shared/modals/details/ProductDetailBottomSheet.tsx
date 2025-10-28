@@ -2,12 +2,13 @@
  * Product Detail Bottom Sheet
  *
  * Displays full details of a shop product
- * with "Add to Cart" action button
+ * with quantity counter and add to cart functionality
  */
 
 import React from "react";
 import { GuestBottomSheet } from "../base/GuestBottomSheet";
-import { ShoppingCart, Package } from "lucide-react";
+import { Package, Plus, Minus } from "lucide-react";
+import { useGuestCart } from "../../../../../contexts/guest/GuestCartContext";
 
 export interface ProductDetailData {
   id: string;
@@ -26,23 +27,43 @@ interface ProductDetailBottomSheetProps {
   isOpen: boolean;
   onClose: () => void;
   product: ProductDetailData | null;
-  onAddToCart?: (productId: string) => void;
 }
 
 export const ProductDetailBottomSheet: React.FC<
   ProductDetailBottomSheetProps
-> = ({ isOpen, onClose, product, onAddToCart }) => {
+> = ({ isOpen, onClose, product }) => {
+  const {
+    addToShopCart,
+    incrementShopItem,
+    decrementShopItem,
+    getShopItemQuantity,
+  } = useGuestCart();
+
   if (!product) return null;
 
-  const handleAddToCart = () => {
-    if (onAddToCart) {
-      onAddToCart(product.id);
-    }
-  };
+  const quantity = getShopItemQuantity(product.id);
 
   const isOutOfStock =
     !product.is_unlimited_stock &&
     (product.stock_quantity === null || product.stock_quantity === 0);
+
+  const handleAdd = () => {
+    addToShopCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      imageUrl: product.image_url || undefined,
+    });
+  };
+
+  const handleIncrement = () => {
+    incrementShopItem(product.id);
+  };
+
+  const handleDecrement = () => {
+    decrementShopItem(product.id);
+  };
 
   return (
     <GuestBottomSheet isOpen={isOpen} onClose={onClose}>
@@ -130,18 +151,48 @@ export const ProductDetailBottomSheet: React.FC<
 
         {/* Fixed Bottom Action Button */}
         <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200">
-          <button
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className={`w-full font-semibold py-4 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg ${
-              isOutOfStock
-                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-emerald-600 hover:bg-emerald-700 text-white"
-            }`}
-          >
-            <ShoppingCart className="w-5 h-5" />
-            {isOutOfStock ? "Out of Stock" : "Add to Cart"}
-          </button>
+          {quantity > 0 ? (
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleDecrement}
+                className="w-12 h-12 flex items-center justify-center bg-white border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors shadow-lg"
+                aria-label="Decrease quantity"
+              >
+                <Minus size={20} />
+              </button>
+              <div className="flex-1 text-center">
+                <span className="text-2xl font-bold text-gray-900">
+                  {quantity}
+                </span>
+                <p className="text-sm text-gray-500">in cart</p>
+              </div>
+              <button
+                onClick={handleIncrement}
+                disabled={isOutOfStock}
+                className={`w-12 h-12 flex items-center justify-center rounded-xl transition-colors shadow-lg ${
+                  isOutOfStock
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                }`}
+                aria-label="Increase quantity"
+              >
+                <Plus size={20} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAdd}
+              disabled={isOutOfStock}
+              className={`w-full font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg ${
+                isOutOfStock
+                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
+              }`}
+            >
+              <Plus className="w-5 h-5" />
+              {isOutOfStock ? "Out of Stock" : "Add to Cart"}
+            </button>
+          )}
         </div>
       </div>
     </GuestBottomSheet>

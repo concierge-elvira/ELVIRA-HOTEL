@@ -24,10 +24,7 @@ export const ExperiencesCategoryCards: React.FC<
     guestSession?.guestData?.hotel_id
   );
 
-  console.log(
-    "[ExperiencesCategoryCards] Hotel settings received:",
-    hotelSettings
-  );
+
 
   const experienceCards = useMemo(
     () => [

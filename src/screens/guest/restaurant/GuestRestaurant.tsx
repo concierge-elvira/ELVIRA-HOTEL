@@ -128,7 +128,7 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
   const handleAddItem = (itemId: string) => {
     const menuItem = menuItems.find((m) => m.id === itemId);
     if (menuItem) {
-      console.log("Add item:", menuItem.name);
+
       addToRestaurantCart({
         id: menuItem.id,
         name: menuItem.name,

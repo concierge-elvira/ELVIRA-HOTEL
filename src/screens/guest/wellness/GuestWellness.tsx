@@ -136,26 +136,21 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
       })) || [];
 
   const handlePlaceClick = (placeId: string) => {
-    console.log("🎯 [GuestWellness] Place clicked:", placeId);
-    console.log("🎯 [GuestWellness] Available wellnessPlaces:", wellnessPlaces);
 
     // Find the full place data from wellnessPlaces
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const placeData = wellnessPlaces.find((item: any) => {
       const place = item.thirdparty_places;
-      console.log("🔍 [GuestWellness] Checking place:", {
-        place_id: place?.id,
-        matches: place?.id === placeId,
-      });
+
       return place?.id === placeId;
     });
 
-    console.log("✅ [GuestWellness] Found placeData:", placeData);
+ 
 
     if (placeData) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const place = (placeData as any).thirdparty_places;
-      console.log("📍 [GuestWellness] Extracted place:", place);
+      
 
       // Transform thirdparty_places data to google_data format for the bottom sheet
       const googleData = {
@@ -201,8 +196,6 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
             : undefined,
       };
 
-      console.log("🔄 [GuestWellness] Transformed place:", transformedPlace);
-      console.log("🔄 [GuestWellness] Google data:", googleData);
 
       setSelectedPlace(transformedPlace);
       setIsDetailOpen(true);

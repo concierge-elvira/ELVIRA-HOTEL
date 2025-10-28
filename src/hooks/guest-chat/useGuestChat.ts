@@ -271,12 +271,103 @@ export function useSendGuestChatMessage() {
         queryKey: queryKeys.guestMessages(data.conversation_id),
       });
       // Invalidate conversation
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.guestConversations(data.guest_id),
-      });
+      if (data.guest_id) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.guestConversations(data.guest_id),
+        });
+      }
     },
     onError: (error) => {
       console.error("Failed to send message:", error);
+    },
+  });
+}
+
+/**
+ * Hook to get unread message count for a guest (messages from hotel staff)
+ */
+export function useGuestUnreadMessageCount(
+  conversationId?: string,
+  enabled = true
+) {
+  const result = useOptimizedQuery({
+    queryKey: ["guest-unread-messages", conversationId],
+    queryFn: async () => {
+      if (!conversationId) {
+        return 0;
+      }
+
+      const supabase = getGuestSupabaseClient();
+
+      const { count, error } = await supabase
+        .from("guest_messages")
+        .select("*", { count: "exact", head: true })
+        .eq("conversation_id", conversationId)
+        .eq("sender_type", "hotel_staff") // Only count messages from staff
+        .eq("is_read", false); // Only unread messages
+
+      if (error) {
+        console.error("Error fetching unread message count:", error);
+        return 0;
+      }
+
+      return count || 0;
+    },
+    enabled: !!conversationId && enabled,
+    config: {
+      staleTime: 1000 * 5, // 5 seconds
+      gcTime: 1000 * 30,
+      refetchOnWindowFocus: true,
+      refetchInterval: 10000, // Poll every 10 seconds
+    },
+    logPrefix: "Guest Unread Messages",
+  });
+
+  // Real-time subscription for message updates
+  useRealtimeSubscription({
+    table: "guest_messages",
+    filter: conversationId ? `conversation_id=eq.${conversationId}` : undefined,
+    queryKey: ["guest-unread-messages", conversationId],
+    enabled: !!conversationId && enabled,
+  });
+
+  return result;
+}
+
+/**
+ * Hook to mark all unread messages from hotel staff as read
+ */
+export function useMarkGuestMessagesAsRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (conversationId: string) => {
+      const supabase = getGuestSupabaseClient();
+
+      // Mark all unread messages from hotel staff as read
+      const { error } = await supabase
+        .from("guest_messages")
+        .update({ is_read: true })
+        .eq("conversation_id", conversationId)
+        .eq("sender_type", "hotel_staff")
+        .eq("is_read", false);
+
+      if (error) {
+        console.error("Error marking messages as read:", error);
+        throw error;
+      }
+
+      return conversationId;
+    },
+    onSuccess: (conversationId) => {
+      // Invalidate unread count query to update badge
+      queryClient.invalidateQueries({
+        queryKey: ["guest-unread-messages", conversationId],
+      });
+      // Also invalidate messages to update their read status
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.guestMessages(conversationId),
+      });
     },
   });
 }

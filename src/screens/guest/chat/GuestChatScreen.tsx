@@ -6,7 +6,7 @@
  * Integrates with OpenAI analyzer for message analysis and translation
  */
 
-import React from "react";
+import React, { useEffect } from "react";
 import { X } from "lucide-react";
 import { ChatWindow } from "../../../screens/hotel/chat-management/components/common/ChatWindow";
 import type {
@@ -18,6 +18,7 @@ import {
   useGuestConversation,
   useGuestChatMessages,
   useSendGuestChatMessage,
+  useMarkGuestMessagesAsRead,
 } from "../../../hooks/guest-chat";
 
 interface GuestChatScreenProps {
@@ -48,6 +49,17 @@ export const GuestChatScreen: React.FC<GuestChatScreenProps> = ({
 
   // Send message mutation
   const sendMessage = useSendGuestChatMessage();
+
+  // Mark messages as read mutation
+  const markAsRead = useMarkGuestMessagesAsRead();
+
+  // Mark messages as read when chat opens
+  useEffect(() => {
+    if (isOpen && conversation?.id) {
+      markAsRead.mutate(conversation.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, conversation?.id]);
 
   // Hotel staff participant (the recipient)
   const hotelStaff: ChatUser = {
