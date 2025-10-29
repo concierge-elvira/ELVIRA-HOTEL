@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Phone } from "lucide-react";
 import { ChatWindow } from "../../../screens/hotel/chat-management/components/common/ChatWindow";
 import type {
   ChatMessage,
@@ -143,13 +143,22 @@ export const GuestChatScreen: React.FC<GuestChatScreenProps> = ({
           <h1 className="font-semibold text-lg">{hotelName}</h1>
           <p className="text-sm text-emerald-100">Chat with Hotel Staff</p>
         </div>
-        <button
-          onClick={onClose}
-          className="p-2 hover:bg-emerald-700 rounded-lg transition-colors"
-          aria-label="Close chat"
-        >
-          <X className="w-6 h-6" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            className="p-2 hover:bg-emerald-700 rounded-lg transition-colors"
+            aria-label="Call hotel"
+            // TODO: Add call handler here
+          >
+            <Phone className="w-6 h-6" />
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-emerald-700 rounded-lg transition-colors"
+            aria-label="Close chat"
+          >
+            <X className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
       {/* Chat Window - Reused Component */}
