@@ -7,6 +7,7 @@ interface GuestShopHeaderProps {
   onSearchChange: (value: string) => void;
   cartCount: number;
   onCartClick: () => void;
+  onBackClick: () => void;
 }
 
 export const GuestShopHeader: React.FC<GuestShopHeaderProps> = ({
@@ -14,14 +15,13 @@ export const GuestShopHeader: React.FC<GuestShopHeaderProps> = ({
   onSearchChange,
   cartCount,
   onCartClick,
+  onBackClick,
 }) => {
   return (
     <SearchFilterBar
       searchValue={searchValue}
       onSearchChange={onSearchChange}
-      onFilterClick={() => {
-        console.log("Filter clicked");
-      }}
+      onBackClick={onBackClick}
       placeholder="Search products..."
       cartButton={<CartButton itemCount={cartCount} onClick={onCartClick} />}
     />

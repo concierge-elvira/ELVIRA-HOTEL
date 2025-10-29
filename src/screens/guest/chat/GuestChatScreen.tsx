@@ -61,13 +61,12 @@ export const GuestChatScreen: React.FC<GuestChatScreenProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, conversation?.id]);
 
-  // Hotel staff participant (the recipient)
+  // Hotel staff participant (required for ChatWindow to show messages)
   const hotelStaff: ChatUser = {
     id: "hotel-staff",
     name: hotelName,
     avatar: undefined,
     status: "online",
-    department: "Chat with Hotel Staff",
   };
 
   // Transform messages to ChatMessage format
@@ -155,15 +154,25 @@ export const GuestChatScreen: React.FC<GuestChatScreenProps> = ({
 
       {/* Chat Window - Reused Component */}
       <div className="flex-1 overflow-hidden">
-        <ChatWindow
-          participant={hotelStaff}
-          messages={chatMessages}
-          onSendMessage={handleSendMessage}
-          inputPlaceholder="Type your message to hotel staff..."
-          isLoading={isLoading}
-          showVideoCall={false}
-          showPhoneCall={false}
-        />
+        <div className="h-full flex flex-col">
+          {/* Hide the ChatHeader by wrapping and using custom CSS */}
+          <style>{`
+            .guest-chat-window .h-16.border-b {
+              display: none;
+            }
+          `}</style>
+          <div className="guest-chat-window h-full">
+            <ChatWindow
+              participant={hotelStaff}
+              messages={chatMessages}
+              onSendMessage={handleSendMessage}
+              inputPlaceholder="Type your message to hotel staff..."
+              isLoading={isLoading}
+              showVideoCall={false}
+              showPhoneCall={false}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

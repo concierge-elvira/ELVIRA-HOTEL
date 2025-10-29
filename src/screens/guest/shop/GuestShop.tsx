@@ -7,6 +7,7 @@ import {
   ProductDetailBottomSheet,
   type ProductDetailData,
 } from "../shared/modals";
+import { ShopCartBottomSheet } from "../cart";
 
 interface GuestShopProps {
   onNavigate?: (path: string) => void;
@@ -25,6 +26,7 @@ export const GuestShop: React.FC<GuestShopProps> = ({ onNavigate }) => {
   const [selectedProduct, setSelectedProduct] =
     useState<ProductDetailData | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Fetch active products for the hotel
   const { data: products = [], isLoading } = useGuestProducts(
@@ -93,6 +95,7 @@ export const GuestShop: React.FC<GuestShopProps> = ({ onNavigate }) => {
       addToShopCart({
         id: product.id,
         name: product.name,
+        description: product.description || undefined,
         price: product.price,
         quantity: 1,
         imageUrl: product.image_url || undefined,
@@ -108,7 +111,8 @@ export const GuestShop: React.FC<GuestShopProps> = ({ onNavigate }) => {
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         cartCount={shopCartCount}
-        onCartClick={() => console.log("View cart")}
+        onCartClick={() => setIsCartOpen(true)}
+        onBackClick={() => onNavigate?.("/guest/home")}
       />
 
       {/* Product Categories */}
@@ -151,6 +155,12 @@ export const GuestShop: React.FC<GuestShopProps> = ({ onNavigate }) => {
         isOpen={isDetailOpen}
         onClose={handleCloseDetail}
         product={selectedProduct}
+      />
+
+      {/* Shop Cart Bottom Sheet */}
+      <ShopCartBottomSheet
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
       />
     </>
   );

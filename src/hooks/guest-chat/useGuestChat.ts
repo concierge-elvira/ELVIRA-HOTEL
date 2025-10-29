@@ -293,6 +293,7 @@ export function useGuestUnreadMessageCount(
   const result = useOptimizedQuery({
     queryKey: ["guest-unread-messages", conversationId],
     queryFn: async () => {
+
       if (!conversationId) {
         return 0;
       }
@@ -307,9 +308,13 @@ export function useGuestUnreadMessageCount(
         .eq("is_read", false); // Only unread messages
 
       if (error) {
-        console.error("Error fetching unread message count:", error);
+        console.error(
+          "❌ [UNREAD COUNT] Error fetching unread message count:",
+          error
+        );
         return 0;
       }
+
 
       return count || 0;
     },
@@ -342,24 +347,46 @@ export function useMarkGuestMessagesAsRead() {
 
   return useMutation({
     mutationFn: async (conversationId: string) => {
+      console.log(
+        "📖 [MARK AS READ] Starting to mark messages as read for conversation:",
+        conversationId
+      );
       const supabase = getGuestSupabaseClient();
 
       // Mark all unread messages from hotel staff as read
-      const { error } = await supabase
+      const { data, error, count } = await supabase
         .from("guest_messages")
         .update({ is_read: true })
         .eq("conversation_id", conversationId)
         .eq("sender_type", "hotel_staff")
-        .eq("is_read", false);
+        .eq("is_read", false)
+        .select("*", { count: "exact" });
 
       if (error) {
-        console.error("Error marking messages as read:", error);
+        console.error(
+          "❌ [MARK AS READ] Error marking messages as read:",
+          error
+        );
         throw error;
       }
 
+      console.log(
+        "✅ [MARK AS READ] Successfully marked messages as read. Updated rows:",
+        count,
+        "Data:",
+        data
+      );
       return conversationId;
     },
-    onSuccess: (conversationId) => {
+    onSuccess: async (conversationId) => {
+      console.log(
+        "📖 [MARK AS READ] onSuccess - Invalidating queries for:",
+        conversationId
+      );
+
+      // Small delay to ensure database update has been committed
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // Invalidate unread count query to update badge
       queryClient.invalidateQueries({
         queryKey: ["guest-unread-messages", conversationId],
@@ -368,6 +395,7 @@ export function useMarkGuestMessagesAsRead() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.guestMessages(conversationId),
       });
+      console.log("📖 [MARK AS READ] Queries invalidated");
     },
   });
 }

@@ -7,6 +7,7 @@ import {
   type MenuItemDetailData,
 } from "../shared/modals";
 import { GuestRestaurantHeader } from "./GuestRestaurantHeader";
+import { RestaurantCartBottomSheet } from "../cart";
 
 interface GuestRestaurantProps {
   onNavigate?: (path: string) => void;
@@ -22,11 +23,14 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
     incrementRestaurantItem,
     decrementRestaurantItem,
     getRestaurantItemQuantity,
+    getRestaurantCartServiceType,
+    canAddToRestaurantCart,
   } = useGuestCart();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMenuItem, setSelectedMenuItem] =
     useState<MenuItemDetailData | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Fetch active menu items for the hotel
   const { data: menuItems = [], isLoading } = useGuestMenuItems(
@@ -92,12 +96,24 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
   const handleAddItem = (itemId: string) => {
     const menuItem = menuItems.find((m) => m.id === itemId);
     if (menuItem) {
+      // Check if item can be added based on service type
+      if (!canAddToRestaurantCart(menuItem.service_type || undefined)) {
+        const lockedType = getRestaurantCartServiceType();
+        alert(
+          `Cannot add this item. Your cart is locked to ${lockedType} items only. Please clear your cart to add items with a different service type.`
+        );
+        return;
+      }
+
       addToRestaurantCart({
         id: menuItem.id,
         name: menuItem.name,
+        description: menuItem.description || undefined,
         price: menuItem.price,
         quantity: 1,
         imageUrl: menuItem.image_url || undefined,
+        serviceType: menuItem.service_type || undefined,
+        restaurantIds: menuItem.restaurant_ids || undefined,
       });
     }
   };
@@ -109,7 +125,8 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         cartCount={restaurantCartCount}
-        onCartClick={() => console.log("View cart")}
+        onCartClick={() => setIsCartOpen(true)}
+        onBackClick={() => onNavigate?.("/guest/home")}
       />
 
       {/* Menu Categories */}
@@ -138,6 +155,7 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
               imageUrl: item.image_url || undefined,
               isRecommended: item.hotel_recommended || false,
               quantity: getRestaurantItemQuantity(item.id),
+              disabled: !canAddToRestaurantCart(item.service_type || undefined),
             }))}
             onAddClick={handleAddItem}
             onCardClick={handleMenuItemClick}
@@ -152,6 +170,12 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
         isOpen={isDetailOpen}
         onClose={handleCloseDetail}
         item={selectedMenuItem}
+      />
+
+      {/* Restaurant Cart Bottom Sheet */}
+      <RestaurantCartBottomSheet
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
       />
     </>
   );

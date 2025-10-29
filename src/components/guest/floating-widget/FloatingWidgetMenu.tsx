@@ -46,6 +46,9 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
     }
   };
 
+  // Show message count: 0 when chat is open, otherwise show actual count
+  const displayMessageCount = isChatOpen ? 0 : messageCount;
+
   const actions = [
     {
       icon: MessageCircle,
@@ -53,7 +56,7 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
       onClick: () => handleActionClick(handleMessageClick),
       bgColor: "bg-blue-500",
       shouldShake: false, // Messages don't shake for order updates
-      badgeCount: isOpen ? messageCount : 0, // Show message count only when menu is open
+      badgeCount: isOpen ? displayMessageCount : 0, // Show message count only when menu is open
     },
     {
       icon: Clock,
@@ -97,7 +100,7 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
             isOpen={isOpen}
             onClick={handleToggle}
             shouldShake={shouldShakeBell}
-            notificationCount={isOpen ? requestCount : messageCount}
+            notificationCount={isOpen ? requestCount : displayMessageCount}
           />
         </div>
       </div>

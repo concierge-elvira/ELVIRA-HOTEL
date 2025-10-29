@@ -95,8 +95,8 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-md border-t border-gray-200/50 shadow-lg z-40">
-      <div className="flex items-center justify-around px-2 py-1.5 max-w-md mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white/70 backdrop-blur-md shadow-lg z-40">
+      <div className="flex items-center justify-around px-2 py-1 max-w-md mx-auto">
         {visibleNavItems.map((item) => {
           const isActive = currentPath === item.path && !item.isAction;
 
@@ -114,11 +114,9 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
             >
               <div className="relative scale-90">
                 {item.icon}
-                {/* Badge */}
+                {/* Badge - Red dot indicator */}
                 {typeof item.badgeCount === "number" && item.badgeCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
-                    {item.badgeCount > 99 ? "99+" : item.badgeCount}
-                  </span>
+                  <span className="absolute -top-0.5 -right-0.5 bg-red-500 rounded-full w-2.5 h-2.5 border-2 border-white shadow-sm"></span>
                 )}
               </div>
               <span
@@ -128,9 +126,6 @@ export const GuestBottomNav: React.FC<GuestBottomNavProps> = ({
               >
                 {item.label}
               </span>
-              {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
-              )}
             </button>
           );
         })}

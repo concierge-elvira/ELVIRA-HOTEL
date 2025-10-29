@@ -7,6 +7,7 @@ import {
   AmenityDetailBottomSheet,
   type AmenityDetailData,
 } from "../shared/modals";
+import { AmenityCartBottomSheet } from "../cart";
 import type { MenuItemCardProps } from "../shared/cards/menu-item/MenuItemCard";
 
 interface GuestAmenitiesProps {
@@ -27,6 +28,7 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
   const [selectedAmenity, setSelectedAmenity] =
     useState<AmenityDetailData | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const { data: amenities, isLoading } = useGuestAmenities(
     guestSession?.guestData?.hotel_id
@@ -86,6 +88,7 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
       addToAmenityCart({
         id: amenity.id,
         name: amenity.name,
+        description: amenity.description || undefined,
         price: amenity.price,
         imageUrl: amenity.image_url || undefined,
       });
@@ -107,7 +110,8 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
         cartCount={amenityCartCount}
-        onCartClick={() => console.log("View cart")}
+        onCartClick={() => setIsCartOpen(true)}
+        onBackClick={() => onNavigate?.("/guest/home")}
       />
 
       {isLoading ? (
@@ -140,6 +144,12 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
         isOpen={isDetailOpen}
         onClose={handleCloseDetail}
         amenity={selectedAmenity}
+      />
+
+      {/* Amenity Cart Bottom Sheet */}
+      <AmenityCartBottomSheet
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
       />
     </>
   );

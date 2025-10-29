@@ -178,12 +178,19 @@ export const GuestTours: React.FC<GuestToursProps> = ({ onNavigate }) => {
     setSelectedPlace(null);
   };
 
+  const handleMapClick = () => {
+    // TODO: Implement map view for tours
+    console.log("Open tours map view...");
+  };
+
   return (
     <>
       {/* Search Bar */}
       <GuestToursHeader
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
+        onBackClick={() => onNavigate?.("/guest/home")}
+        onMapClick={handleMapClick}
       />
 
       {/* Tours Places */}

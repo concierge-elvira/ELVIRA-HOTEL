@@ -180,12 +180,19 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
     setSelectedPlace(null);
   };
 
+  const handleMapClick = () => {
+    // TODO: Implement map view for gastronomy
+    console.log("Open gastronomy map view...");
+  };
+
   return (
     <>
       {/* Search Bar */}
       <GuestGastronomyHeader
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
+        onBackClick={() => onNavigate?.("/guest/home")}
+        onMapClick={handleMapClick}
       />
 
       {/* Gastronomy Places */}

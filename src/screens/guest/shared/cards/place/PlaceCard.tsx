@@ -37,7 +37,7 @@ export const PlaceCard: React.FC<PlaceCardProps> = ({
 
   return (
     <div
-      className={`relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200 ${
+      className={`relative bg-white rounded-r-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200 ${
         onClick ? "cursor-pointer" : ""
       }`}
       onClick={handleClick}

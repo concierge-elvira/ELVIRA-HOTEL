@@ -33,7 +33,7 @@ export const GuestHeader: React.FC<GuestHeaderProps> = ({
   };
 
   return (
-    <header className="bg-white px-4 py-4 shadow-sm">
+    <header className="bg-white px-4 py-2.5 shadow-sm">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <h1 className="text-lg font-semibold text-gray-900">
@@ -52,7 +52,7 @@ export const GuestHeader: React.FC<GuestHeaderProps> = ({
           <button
             onClick={handleDNDToggle}
             disabled={toggleDND.isPending}
-            className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-colors border border-gray-300 ${
               dndStatus
                 ? "bg-red-50 text-red-600 hover:bg-red-100"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"

@@ -6,14 +6,18 @@
  */
 
 import React, { useState } from "react";
-import { Send } from "lucide-react";
+import { Send, ArrowLeft, X } from "lucide-react";
 import { getGuestSupabaseClient } from "../../../../services/guestSupabase";
 
 interface AskQuestionProps {
   hotelId: string;
+  onBackClick: () => void;
 }
 
-export const AskQuestion: React.FC<AskQuestionProps> = ({ hotelId }) => {
+export const AskQuestion: React.FC<AskQuestionProps> = ({
+  hotelId,
+  onBackClick,
+}) => {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -60,54 +64,68 @@ export const AskQuestion: React.FC<AskQuestionProps> = ({ hotelId }) => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleAsk();
-    }
-  };
-
   return (
-    <div className="bg-white border-b border-gray-200 p-3">
-      <h3 className="text-sm font-semibold text-gray-900 mb-2">
-        Ask a Question
-      </h3>
+    <div className="bg-white">
+      {/* Search Filter Bar with Ask Button */}
+      <div className="px-4 py-2.5 bg-white">
+        <div className="flex items-center">
+          {/* Search Box */}
+          <div className="flex-1 relative flex items-center gap-2.5 bg-gray-100 rounded-full px-4 py-2.5">
+            {/* Back Button */}
+            <button
+              onClick={onBackClick}
+              className="shrink-0 p-0 hover:opacity-70 transition-opacity"
+              aria-label="Go back"
+            >
+              <ArrowLeft className="text-gray-700" size={20} />
+            </button>
 
-      {/* Input */}
-      <div className="flex gap-2 mb-2">
-        <input
-          type="text"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Type your question here..."
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          disabled={isLoading}
-        />
-        <button
-          onClick={handleAsk}
-          disabled={isLoading || !question.trim()}
-          className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-        >
-          {isLoading ? (
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
-          <span className="text-sm font-medium">Ask</span>
-        </button>
+            <input
+              type="text"
+              value={question}
+              onChange={(e) => setQuestion(e.target.value)}
+              placeholder="Type your question here..."
+              className="flex-1 bg-transparent border-none focus:outline-none text-base placeholder:text-gray-500 font-normal"
+            />
+
+            {/* Clear Button - shows when there's text */}
+            {question && (
+              <button
+                onClick={() => setQuestion("")}
+                className="shrink-0 p-0 hover:opacity-70 transition-opacity"
+                aria-label="Clear search"
+              >
+                <X className="text-gray-500" size={20} />
+              </button>
+            )}
+
+            {/* Ask Button - Send icon, styled like go-back */}
+            <button
+              onClick={handleAsk}
+              disabled={isLoading || !question.trim()}
+              className="shrink-0 p-0 hover:opacity-70 transition-opacity"
+              aria-label="Ask question"
+            >
+              {isLoading ? (
+                <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Send className="text-gray-700" size={20} />
+              )}
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Error */}
       {error && (
-        <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+        <div className="mx-4 mb-3 p-3 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
 
       {/* Answer */}
       {answer && (
-        <div className="p-2 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="mx-4 mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-gray-700 whitespace-pre-wrap">{answer}</p>
         </div>
       )}

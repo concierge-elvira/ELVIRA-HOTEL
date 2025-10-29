@@ -18,6 +18,7 @@ export interface ShopCartItem {
   type: "product";
   id: string;
   name: string;
+  description?: string;
   price: number;
   quantity: number;
   imageUrl?: string;
@@ -27,15 +28,19 @@ export interface RestaurantCartItem {
   type: "menu_item";
   id: string;
   name: string;
+  description?: string;
   price: number;
   quantity: number;
   imageUrl?: string;
+  serviceType?: string[]; // "Restaurant" or "Room Service"
+  restaurantIds?: string[]; // The restaurants this item is available at
 }
 
 export interface AmenityCartItem {
   type: "amenity";
   id: string;
   name: string;
+  description?: string;
   price: number;
   imageUrl?: string;
 }
@@ -64,6 +69,8 @@ interface GuestCartContextType {
   clearRestaurantCart: () => void;
   restaurantCartCount: number;
   getRestaurantItemQuantity: (itemId: string) => number;
+  getRestaurantCartServiceType: () => string | null; // Get locked service type
+  canAddToRestaurantCart: (serviceType?: string[]) => boolean; // Check if item can be added
 
   // Amenity cart
   amenityCart: AmenityCartItem[];
@@ -89,7 +96,6 @@ export const GuestCartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Shop cart methods
   const addToShopCart = useCallback((item: Omit<ShopCartItem, "type">) => {
-
     setShopCart((prev) => {
       const existingIndex = prev.findIndex((i) => i.id === item.id);
       if (existingIndex >= 0) {
@@ -165,7 +171,6 @@ export const GuestCartProvider: React.FC<{ children: React.ReactNode }> = ({
   // Restaurant cart methods
   const addToRestaurantCart = useCallback(
     (item: Omit<RestaurantCartItem, "type">) => {
-
       setRestaurantCart((prev) => {
         const existingIndex = prev.findIndex((i) => i.id === item.id);
         if (existingIndex >= 0) {
@@ -240,14 +245,44 @@ export const GuestCartProvider: React.FC<{ children: React.ReactNode }> = ({
     return count;
   }, [restaurantCart]);
 
+  // Get the locked service type from cart (first item's service type)
+  const getRestaurantCartServiceType = useCallback(() => {
+    if (restaurantCart.length === 0) return null;
+    const firstItem = restaurantCart[0];
+    // Return the first service type if available
+    if (firstItem.serviceType && firstItem.serviceType.length > 0) {
+      return firstItem.serviceType[0];
+    }
+    return null;
+  }, [restaurantCart]);
+
+  // Check if an item with given service type can be added to cart
+  const canAddToRestaurantCart = useCallback(
+    (serviceType?: string[]) => {
+      // If cart is empty, any item can be added
+      if (restaurantCart.length === 0) return true;
+
+      // If the item has no service type, it can be added
+      if (!serviceType || serviceType.length === 0) return true;
+
+      // Get the locked service type from cart
+      const lockedServiceType = getRestaurantCartServiceType();
+
+      // If no locked service type, any item can be added
+      if (!lockedServiceType) return true;
+
+      // Check if the item's service types include the locked one
+      return serviceType.includes(lockedServiceType);
+    },
+    [restaurantCart, getRestaurantCartServiceType]
+  );
+
   // Amenity cart methods
   const addToAmenityCart = useCallback(
     (item: Omit<AmenityCartItem, "type">) => {
-
       setAmenityCart((prev) => {
         const exists = prev.some((i) => i.id === item.id);
         if (exists) {
-
           return prev;
         }
         const newCart = [...prev, { ...item, type: "amenity" as const }];
@@ -300,6 +335,8 @@ export const GuestCartProvider: React.FC<{ children: React.ReactNode }> = ({
         clearRestaurantCart,
         restaurantCartCount,
         getRestaurantItemQuantity,
+        getRestaurantCartServiceType,
+        canAddToRestaurantCart,
         amenityCart,
         addToAmenityCart,
         removeFromAmenityCart,

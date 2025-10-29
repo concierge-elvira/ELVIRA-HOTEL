@@ -56,9 +56,7 @@ export function useGuestRealtimeSubscription({
         filter || "all"
       }-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      console.log(`[Realtime Setup] 📡 Creating subscription for ${table}`);
-      console.log(`[Realtime Setup] 🔑 Channel: ${channelName}`);
-      console.log(`[Realtime Setup] 🎯 Filter: ${filter || "none"}`);
+
 
       // Build the postgres_changes config
       const changesConfig: {
@@ -77,7 +75,7 @@ export function useGuestRealtimeSubscription({
         changesConfig.filter = filter;
       }
 
-      console.log(`[Realtime Setup] ⚙️ Config:`, changesConfig);
+
 
       const channel = guestSupabase
         .channel(channelName)
@@ -106,8 +104,7 @@ export function useGuestRealtimeSubscription({
           console.log(`[Realtime Status] ${table} - Status: ${status}`);
 
           if (status === "SUBSCRIBED") {
-            console.log(`[Realtime] ✅ ${table} connected successfully`);
-            console.log(`[Realtime] 📊 Channel state:`, channel);
+
             // Clear any reconnect timeouts
             if (reconnectTimeoutRef.current) {
               clearTimeout(reconnectTimeoutRef.current);
@@ -168,7 +165,7 @@ export function useGuestRealtimeSubscription({
             console.log(`[Realtime] 🔌 ${table} connection closed`);
           } else {
             // Log any other status we don't explicitly handle
-            console.log(`[Realtime] ℹ️ ${table} status: ${status}`);
+
           }
         });
 

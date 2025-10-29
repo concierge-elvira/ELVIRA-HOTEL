@@ -7,8 +7,10 @@
 
 import React from "react";
 import { GuestBottomSheet } from "../base/GuestBottomSheet";
-import { Utensils, Plus, Minus } from "lucide-react";
+import { Utensils, Plus } from "lucide-react";
 import { useGuestCart } from "../../../../../contexts/guest/GuestCartContext";
+import { GuestButton } from "../../../../../components/guest/shared/buttons/GuestButton";
+import { QuantityControl } from "../../../../../components/guest/shared/buttons/QuantityControl";
 
 export interface MenuItemDetailData {
   id: string;
@@ -142,36 +144,16 @@ export const MenuItemDetailBottomSheet: React.FC<
         {/* Fixed Bottom Action Button */}
         <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200">
           {quantity > 0 ? (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleDecrement}
-                className="w-12 h-12 flex items-center justify-center bg-white border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors shadow-lg"
-                aria-label="Decrease quantity"
-              >
-                <Minus size={20} />
-              </button>
-              <div className="flex-1 text-center">
-                <span className="text-2xl font-bold text-gray-900">
-                  {quantity}
-                </span>
-                <p className="text-sm text-gray-500">in cart</p>
-              </div>
-              <button
-                onClick={handleIncrement}
-                className="w-12 h-12 flex items-center justify-center bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition-colors shadow-lg"
-                aria-label="Increase quantity"
-              >
-                <Plus size={20} />
-              </button>
-            </div>
+            <QuantityControl
+              quantity={quantity}
+              onIncrement={handleIncrement}
+              onDecrement={handleDecrement}
+            />
           ) : (
-            <button
-              onClick={handleAdd}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg"
-            >
+            <GuestButton fullWidth size="md" onClick={handleAdd}>
               <Plus className="w-5 h-5" />
               Add to Cart
-            </button>
+            </GuestButton>
           )}
         </div>
       </div>

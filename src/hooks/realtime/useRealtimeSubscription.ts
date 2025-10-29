@@ -49,9 +49,7 @@ export function useRealtimeSubscription({
         .toString(36)
         .substr(2, 9)}`;
 
-      console.log(`[Realtime Setup] 📡 Creating subscription for ${table}`);
-      console.log(`[Realtime Setup] 🔑 Channel: ${channelName}`);
-      console.log(`[Realtime Setup] 🎯 Filter: ${filter || "none"}`);
+
 
       const config = {
         event: "*" as const,
@@ -60,7 +58,6 @@ export function useRealtimeSubscription({
         filter,
       };
 
-      console.log(`[Realtime Setup] ⚙️ Config:`, config);
 
       const channel = supabase
         .channel(channelName)
@@ -83,8 +80,7 @@ export function useRealtimeSubscription({
           console.log(`[Realtime Status] ${table} - Status: ${status}`);
 
           if (status === "SUBSCRIBED") {
-            console.log(`[Realtime] ✅ ${table} connected successfully`);
-            console.log(`[Realtime] 📊 Channel state:`, channel);
+
             // Clear any reconnect timeouts
             if (reconnectTimeoutRef.current) {
               clearTimeout(reconnectTimeoutRef.current);
@@ -145,7 +141,7 @@ export function useRealtimeSubscription({
             console.log(`[Realtime] 🔌 ${table} connection closed`);
           } else {
             // Log any other status we don't explicitly handle
-            console.log(`[Realtime] ℹ️ ${table} status: ${status}`);
+
           }
         });
 

@@ -7,6 +7,7 @@ interface GuestAmenitiesHeaderProps {
   onSearchChange: (value: string) => void;
   cartCount: number;
   onCartClick: () => void;
+  onBackClick: () => void;
 }
 
 export const GuestAmenitiesHeader: React.FC<GuestAmenitiesHeaderProps> = ({
@@ -14,14 +15,13 @@ export const GuestAmenitiesHeader: React.FC<GuestAmenitiesHeaderProps> = ({
   onSearchChange,
   cartCount,
   onCartClick,
+  onBackClick,
 }) => {
   return (
     <SearchFilterBar
       searchValue={searchValue}
       onSearchChange={onSearchChange}
-      onFilterClick={() => {
-        console.log("Filter clicked");
-      }}
+      onBackClick={onBackClick}
       placeholder="Search amenities..."
       cartButton={<CartButton itemCount={cartCount} onClick={onCartClick} />}
     />

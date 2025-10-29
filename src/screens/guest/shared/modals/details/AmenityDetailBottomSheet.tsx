@@ -9,6 +9,7 @@ import React from "react";
 import { GuestBottomSheet } from "../base/GuestBottomSheet";
 import { MapPin, Plus, Check } from "lucide-react";
 import { useGuestCart } from "../../../../../contexts/guest/GuestCartContext";
+import { GuestButton } from "../../../../../components/guest/shared/buttons/GuestButton";
 
 export interface AmenityDetailData {
   id: string;
@@ -40,7 +41,10 @@ export const AmenityDetailBottomSheet: React.FC<
     if (isAdded) {
       removeFromAmenityCart(amenity.id);
     } else {
-      addToAmenityCart(amenity);
+      addToAmenityCart({
+        ...amenity,
+        description: amenity.description || undefined,
+      });
     }
   };
 
@@ -104,13 +108,11 @@ export const AmenityDetailBottomSheet: React.FC<
 
         {/* Fixed Bottom Action Button */}
         <div className="fixed bottom-0 left-0 right-0 p-6 bg-white border-t border-gray-200">
-          <button
+          <GuestButton
+            fullWidth
+            size="md"
             onClick={handleToggle}
-            className={`w-full font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg ${
-              isAdded
-                ? "bg-green-500 hover:bg-green-600 text-white"
-                : "bg-emerald-600 hover:bg-emerald-700 text-white"
-            }`}
+            variant={isAdded ? "secondary" : "primary"}
           >
             {isAdded ? (
               <>
@@ -123,7 +125,7 @@ export const AmenityDetailBottomSheet: React.FC<
                 Add to Cart
               </>
             )}
-          </button>
+          </GuestButton>
         </div>
       </div>
     </GuestBottomSheet>

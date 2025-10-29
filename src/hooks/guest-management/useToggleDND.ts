@@ -29,7 +29,7 @@ export function useToggleDND() {
         throw error;
       }
 
-      console.log("[useToggleDND] ✅ DND status updated successfully:", data);
+
       return data;
     },
     onSuccess: () => {

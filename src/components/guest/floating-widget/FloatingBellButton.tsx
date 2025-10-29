@@ -51,11 +51,9 @@ export const FloatingBellButton: React.FC<FloatingBellButtonProps> = ({
         }`}
       />
 
-      {/* Notification badge - more discreet */}
+      {/* Notification badge - Red dot indicator */}
       {!isOpen && notificationCount > 0 && (
-        <span className="absolute -top-0.5 -right-0.5 bg-red-500 text-white text-[10px] font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center shadow-sm">
-          {notificationCount > 99 ? "99+" : notificationCount}
-        </span>
+        <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-3 h-3 border-2 border-white shadow-md animate-pulse"></span>
       )}
     </button>
   );

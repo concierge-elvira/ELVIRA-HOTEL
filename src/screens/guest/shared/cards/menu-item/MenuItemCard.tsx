@@ -26,6 +26,8 @@ export interface MenuItemCardProps {
   // Amenity added state
   isAdded?: boolean;
   onRemoveClick?: (id: string) => void;
+  // Disabled state (for service type restrictions)
+  disabled?: boolean;
 }
 
 export const MenuItemCard: React.FC<MenuItemCardProps> = ({
@@ -42,8 +44,10 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
   onDecrement,
   isAdded,
   onRemoveClick,
+  disabled = false,
 }) => {
   const handleCardClick = () => {
+    if (disabled) return;
     if (onCardClick) {
       onCardClick(id);
     }
@@ -51,6 +55,7 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
 
   const handleAddClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent card click when clicking the add button
+    if (disabled) return;
     if (onAddClick) {
       onAddClick(id);
     }
@@ -82,7 +87,11 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
 
   return (
     <div
-      className="relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 border border-gray-200 cursor-pointer"
+      className={`relative bg-white rounded-r-2xl overflow-hidden shadow-sm transition-shadow duration-200 border border-gray-200 ${
+        disabled
+          ? "opacity-50 cursor-not-allowed"
+          : "hover:shadow-md cursor-pointer"
+      }`}
       onClick={handleCardClick}
     >
       <div className="flex gap-3">
@@ -102,41 +111,46 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
             </div>
             {/* Quantity Counter or Add Button - Bottom Right of Image */}
             {showQuantityCounter ? (
-              <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white rounded-full shadow-md border border-gray-200 px-1">
+              <div className="absolute bottom-2 right-2 flex items-center gap-0.5 bg-white rounded-full shadow-md border border-gray-200 px-0.5">
                 <button
                   onClick={handleDecrement}
-                  className="w-7 h-7 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                  className="w-6 h-6 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                   aria-label="Decrease quantity"
                 >
-                  <Minus size={14} />
+                  <Minus size={12} />
                 </button>
-                <span className="text-sm font-semibold text-gray-900 min-w-5 text-center">
+                <span className="text-xs font-semibold text-gray-900 min-w-5 text-center">
                   {quantity}
                 </span>
                 <button
                   onClick={handleIncrement}
-                  className="w-7 h-7 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                  className="w-6 h-6 flex items-center justify-center text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
                   aria-label="Increase quantity"
                 >
-                  <Plus size={14} />
+                  <Plus size={12} />
                 </button>
               </div>
             ) : isAdded ? (
               <button
                 onClick={handleRemoveClick}
-                className="absolute bottom-2 right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-sm hover:bg-green-600 active:bg-green-700 transition-colors"
+                className="absolute bottom-2 right-2 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center shadow-sm hover:bg-green-600 active:bg-green-700 transition-colors"
                 aria-label={`Remove ${title}`}
               >
-                <Check size={18} className="text-white" />
+                <Check size={16} className="text-white" />
               </button>
             ) : (
               onAddClick && (
                 <button
                   onClick={handleAddClick}
-                  className="absolute bottom-2 right-2 w-8 h-8 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center hover:bg-blue-50 hover:border-blue-500 transition-all duration-200 shadow-sm"
+                  disabled={disabled}
+                  className={`absolute bottom-2 right-2 w-7 h-7 bg-white border-2 border-gray-200 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm ${
+                    disabled
+                      ? "cursor-not-allowed opacity-50"
+                      : "hover:bg-blue-50 hover:border-blue-500"
+                  }`}
                   aria-label={`Add ${title}`}
                 >
-                  <Plus size={16} className="text-blue-600" />
+                  <Plus size={14} className="text-blue-600" />
                 </button>
               )
             )}
@@ -153,7 +167,9 @@ export const MenuItemCard: React.FC<MenuItemCardProps> = ({
               ${price.toFixed(2)}
             </span>
           </div>
-          <p className="text-sm text-gray-600 line-clamp-2">{description}</p>
+          {description && (
+            <p className="text-sm text-gray-600 line-clamp-2">{description}</p>
+          )}
         </div>
       </div>
 

@@ -118,8 +118,19 @@ export const GuestHome: React.FC<GuestHomeProps> = ({ onNavigate }) => {
             showPrice={false}
             onItemClick={(item) => {
               console.log("Clicked experience recommendation:", item);
-              // Navigate to places page or show details
-              onNavigate?.("/guest/places");
+              // Navigate based on the category of the item
+              const category = item.category?.toLowerCase();
+
+              if (category === "gastronomy") {
+                onNavigate?.("/guest/gastronomy");
+              } else if (category === "tours" || category === "tour") {
+                onNavigate?.("/guest/tours");
+              } else if (category === "wellness") {
+                onNavigate?.("/guest/wellness");
+              } else {
+                // Default fallback to places page
+                onNavigate?.("/guest/places");
+              }
             }}
           />
         )}
@@ -148,7 +159,7 @@ export const GuestHome: React.FC<GuestHomeProps> = ({ onNavigate }) => {
 
       {/* Emergency Contacts Section */}
       {emergencyContacts && emergencyContacts.length > 0 && (
-        <div className="pb-20">
+        <div >
           <EmergencyContactsSection contacts={emergencyContacts} />
         </div>
       )}

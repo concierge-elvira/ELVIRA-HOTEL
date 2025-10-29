@@ -43,6 +43,12 @@ export const GuestQA: React.FC<GuestQAProps> = ({
 
   const { guestData, hotelData } = guestSession;
 
+  const handleBackClick = () => {
+    if (onNavigate) {
+      onNavigate("/guest/home");
+    }
+  };
+
   return (
     <GuestPageLayout
       guestName={guestData.guest_name}
@@ -56,7 +62,7 @@ export const GuestQA: React.FC<GuestQAProps> = ({
       onClockClick={onClockClick}
     >
       {/* Ask Question Section - Full width, no margins */}
-      <AskQuestion hotelId={guestData.hotel_id} />
+      <AskQuestion hotelId={guestData.hotel_id} onBackClick={handleBackClick} />
 
       <div className="px-4 py-6">
         {/* Browse Common Questions Header */}

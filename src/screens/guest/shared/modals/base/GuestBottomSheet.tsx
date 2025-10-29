@@ -65,7 +65,7 @@ export const GuestBottomSheet: React.FC<GuestBottomSheetProps> = ({
         className="fixed inset-x-0 bottom-0 z-[9999] animate-slide-up"
         style={{ maxHeight }}
       >
-        <div className="bg-white rounded-t-3xl shadow-2xl overflow-hidden">
+        <div className="bg-white rounded-t-[2rem] shadow-2xl overflow-hidden">
           {/* Handle Bar */}
           <div className="flex justify-center pt-3 pb-2">
             <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
@@ -73,7 +73,7 @@ export const GuestBottomSheet: React.FC<GuestBottomSheetProps> = ({
 
           {/* Header */}
           {title && (
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <div className="flex items-center justify-between px-6 py-1 border-b border-gray-200">
               <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
               <button
                 onClick={onClose}

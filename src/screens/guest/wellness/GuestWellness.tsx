@@ -183,12 +183,19 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({ onNavigate }) => {
     setSelectedPlace(null);
   };
 
+  const handleMapClick = () => {
+    // TODO: Implement map view
+    console.log("Open map view for wellness places");
+  };
+
   return (
     <>
       {/* Search Bar */}
       <GuestWellnessHeader
         searchValue={searchQuery}
         onSearchChange={setSearchQuery}
+        onBackClick={() => onNavigate?.("/guest/home")}
+        onMapClick={handleMapClick}
       />
 
       {/* Wellness Places */}
