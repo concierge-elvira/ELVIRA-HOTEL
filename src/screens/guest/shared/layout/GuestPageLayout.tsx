@@ -7,6 +7,7 @@ import {
   useGuestConversation,
   useGuestUnreadMessageCount,
 } from "../../../../hooks/guest-chat";
+import { useGuestAnnouncements } from "../../../../hooks/announcements";
 
 interface GuestPageLayoutProps {
   guestName: string;
@@ -14,7 +15,6 @@ interface GuestPageLayoutProps {
   roomNumber: string;
   guestId: string;
   dndStatus: boolean;
-  announcements?: Array<{ id: string; message: string }>;
   currentPath?: string;
   onNavigate?: (path: string) => void;
   children: React.ReactNode;
@@ -22,7 +22,7 @@ interface GuestPageLayoutProps {
   onClockClick?: () => void; // Callback for clock/room service button
   onMessageClick?: () => void; // Callback for message button
   requestCount?: number; // Number of pending requests to show on bell
-  hotelId?: string; // Hotel ID for fetching conversation
+  hotelId?: string; // Hotel ID for fetching conversation and announcements
 }
 
 export const GuestPageLayout: React.FC<GuestPageLayoutProps> = ({
@@ -31,7 +31,6 @@ export const GuestPageLayout: React.FC<GuestPageLayoutProps> = ({
   roomNumber,
   guestId,
   dndStatus,
-  announcements = [],
   currentPath,
   onNavigate,
   children,
@@ -50,10 +49,21 @@ export const GuestPageLayout: React.FC<GuestPageLayoutProps> = ({
     !!conversation?.id
   );
 
+  // Fetch announcements
+  const { data: announcements = [] } = useGuestAnnouncements(hotelId);
+
+  // Format announcements for ticker
+  const activeAnnouncements = announcements
+    .filter((a) => a.is_active)
+    .map((a) => ({
+      id: a.id,
+      message: `${a.title} • ${a.description}`,
+    }));
+
   return (
     <div className="fixed inset-0 flex flex-col bg-gray-50">
       {/* Fixed Header Section (Header + Ticker + Optional Search/Filter) */}
-      <div className="shrink-0 z-50 bg-white shadow-sm">
+      <div className="shrink-0 z-40 bg-white shadow-sm">
         {/* Header */}
         <GuestHeader
           guestName={guestName}
@@ -64,8 +74,8 @@ export const GuestPageLayout: React.FC<GuestPageLayoutProps> = ({
         />
 
         {/* Announcements Ticker */}
-        {announcements.length > 0 && (
-          <AnnouncementTicker announcements={announcements} />
+        {activeAnnouncements.length > 0 && (
+          <AnnouncementTicker announcements={activeAnnouncements} />
         )}
 
         {/* Optional Header Slot (e.g., Search Bar) */}

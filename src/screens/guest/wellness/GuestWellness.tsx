@@ -1,33 +1,21 @@
 import React, { useState, useMemo } from "react";
 import { useGuestAuth } from "../../../contexts/guest";
-import { GuestPageLayout } from "../shared/layout";
-import { SearchFilterBar } from "../shared/search-filter";
+import { GuestWellnessHeader } from "./GuestWellnessHeader";
 import { PlaceCategorySection } from "../shared/cards/place";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestWellnessPlaces } from "../../../hooks/guest-management/wellness";
 import { PlaceDetailBottomSheet, type PlaceDetailData } from "../shared/modals";
 
 interface GuestWellnessProps {
   onNavigate?: (path: string) => void;
-  currentPath?: string;
-  onClockClick?: () => void;
 }
 
-export const GuestWellness: React.FC<GuestWellnessProps> = ({
-  onNavigate,
-  currentPath = "/guest/wellness",
-  onClockClick,
-}) => {
+export const GuestWellness: React.FC<GuestWellnessProps> = ({ onNavigate }) => {
   const { guestSession } = useGuestAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlace, setSelectedPlace] = useState<PlaceDetailData | null>(
     null
   );
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
 
   // Fetch approved wellness places
   const { data: wellnessPlaces = [], isLoading } = useGuestWellnessPlaces(
@@ -124,19 +112,9 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
     return null;
   }
 
-  const { guestData, hotelData } = guestSession;
-
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
+  const { hotelData } = guestSession;
 
   const handlePlaceClick = (placeId: string) => {
-
     // Find the full place data from wellnessPlaces
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const placeData = wellnessPlaces.find((item: any) => {
@@ -145,12 +123,9 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
       return place?.id === placeId;
     });
 
- 
-
     if (placeData) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const place = (placeData as any).thirdparty_places;
-      
 
       // Transform thirdparty_places data to google_data format for the bottom sheet
       const googleData = {
@@ -196,7 +171,6 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
             : undefined,
       };
 
-
       setSelectedPlace(transformedPlace);
       setIsDetailOpen(true);
     } else {
@@ -210,27 +184,13 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
   };
 
   return (
-    <GuestPageLayout
-      guestName={guestData.guest_name}
-      hotelName={hotelData.name}
-      roomNumber={guestData.room_number}
-      guestId={guestData.id}
-      dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
-      currentPath={currentPath}
-      onNavigate={onNavigate}
-      onClockClick={onClockClick}
-      headerSlot={
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          onFilterClick={() => {
-            console.log("Filter clicked");
-          }}
-          placeholder="Search wellness places..."
-        />
-      }
-    >
+    <>
+      {/* Search Bar */}
+      <GuestWellnessHeader
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+
       {/* Wellness Places */}
       {isLoading ? (
         <div className="text-center py-12">
@@ -270,6 +230,6 @@ export const GuestWellness: React.FC<GuestWellnessProps> = ({
         onClose={handleCloseDetail}
         place={selectedPlace}
       />
-    </GuestPageLayout>
+    </>
   );
 };

@@ -6,3 +6,5 @@ export {
   useDeleteAnnouncement,
   useToggleAnnouncementStatus,
 } from "./useAnnouncements";
+
+export { useGuestAnnouncements } from "./useGuestAnnouncements";

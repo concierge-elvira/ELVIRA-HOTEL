@@ -10,6 +10,7 @@ import { GuestWellness } from "./wellness";
 import { GuestGastronomy } from "./gastronomy";
 import { GuestToVisit } from "./to-visit";
 import { RequestHistoryBottomSheet } from "./request-history";
+import { GuestPageLayout } from "./shared/layout";
 import { useGuestAuth } from "../../contexts/guest";
 import { GuestNotificationProvider } from "../../contexts/guest/GuestNotificationContext";
 import { GuestCartProvider } from "../../contexts/guest/GuestCartContext";
@@ -47,111 +48,61 @@ export const GuestRouter: React.FC = () => {
   const renderPage = () => {
     switch (currentRoute) {
       case "/guest/home":
-        return (
-          <GuestHome
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestHome onNavigate={handleNavigate} />;
       case "/guest/shop":
-        return (
-          <GuestShop
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestShop onNavigate={handleNavigate} />;
       case "/guest/amenities":
       case "/guest/services":
-        return (
-          <GuestAmenities
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestAmenities onNavigate={handleNavigate} />;
       case "/guest/restaurant":
-        return (
-          <GuestRestaurant
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestRestaurant onNavigate={handleNavigate} />;
       case "/guest/qa":
-        return (
-          <GuestQA
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestQA onNavigate={handleNavigate} />;
       case "/guest/places":
-        return (
-          <GuestPlaces
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestPlaces onNavigate={handleNavigate} />;
       case "/guest/tours":
-        return (
-          <GuestTours
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestTours onNavigate={handleNavigate} />;
       case "/guest/wellness":
-        return (
-          <GuestWellness
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestWellness onNavigate={handleNavigate} />;
       case "/guest/gastronomy":
-        return (
-          <GuestGastronomy
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestGastronomy onNavigate={handleNavigate} />;
       case "/guest/to-visit":
-        return (
-          <GuestToVisit
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestToVisit onNavigate={handleNavigate} />;
       default:
-        return (
-          <GuestHome
-            onNavigate={handleNavigate}
-            currentPath={currentRoute}
-            onClockClick={handleClockClick}
-          />
-        );
+        return <GuestHome onNavigate={handleNavigate} />;
     }
   };
+
+  if (!guestSession) {
+    return null;
+  }
+
+  const { guestData, hotelData } = guestSession;
 
   return (
     <GuestCartProvider>
       <GuestNotificationProvider>
-        {renderPage()}
+        <GuestPageLayout
+          guestName={guestData.guest_name}
+          hotelName={hotelData.name}
+          roomNumber={guestData.room_number}
+          guestId={guestData.id}
+          dndStatus={guestData.dnd_status}
+          hotelId={guestData.hotel_id}
+          currentPath={currentRoute}
+          onNavigate={handleNavigate}
+          onClockClick={handleClockClick}
+        >
+          {renderPage()}
+        </GuestPageLayout>
 
         {/* Request History Bottom Sheet */}
-        {guestSession && (
-          <RequestHistoryBottomSheet
-            isOpen={isRequestHistoryOpen}
-            onClose={handleCloseRequestHistory}
-            guestId={guestSession.guestData.id}
-            hotelId={guestSession.guestData.hotel_id}
-          />
-        )}
+        <RequestHistoryBottomSheet
+          isOpen={isRequestHistoryOpen}
+          onClose={handleCloseRequestHistory}
+          guestId={guestData.id}
+          hotelId={guestData.hotel_id}
+        />
       </GuestNotificationProvider>
     </GuestCartProvider>
   );

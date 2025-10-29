@@ -1,10 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useGuestAuth, useGuestCart } from "../../../contexts/guest";
-import { GuestPageLayout } from "../shared/layout";
-import { SearchFilterBar } from "../shared/search-filter";
-import { CartButton } from "../../../components/guest/shared/cart";
+import { GuestShopHeader } from "./GuestShopHeader";
 import { MenuCategorySection } from "../shared/cards/menu-item";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestProducts } from "../../../hooks/guest-management/shop";
 import {
   ProductDetailBottomSheet,
@@ -13,15 +10,9 @@ import {
 
 interface GuestShopProps {
   onNavigate?: (path: string) => void;
-  currentPath?: string;
-  onClockClick?: () => void;
 }
 
-export const GuestShop: React.FC<GuestShopProps> = ({
-  onNavigate,
-  currentPath = "/guest/shop",
-  onClockClick,
-}) => {
+export const GuestShop: React.FC<GuestShopProps> = ({ onNavigate }) => {
   const { guestSession } = useGuestAuth();
   const {
     shopCartCount,
@@ -34,10 +25,6 @@ export const GuestShop: React.FC<GuestShopProps> = ({
   const [selectedProduct, setSelectedProduct] =
     useState<ProductDetailData | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
 
   // Fetch active products for the hotel
   const { data: products = [], isLoading } = useGuestProducts(
@@ -87,39 +74,12 @@ export const GuestShop: React.FC<GuestShopProps> = ({
     return null;
   }
 
-  const { guestData, hotelData } = guestSession;
-
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
-
   const handleProductClick = (itemId: string) => {
     const product = products.find((p) => p.id === itemId);
     if (product) {
       setSelectedProduct(product);
       setIsDetailOpen(true);
     }
-  };
-
-  const handleAddToCart = (productId: string) => {
-    const product = products.find((p) => p.id === productId);
-    if (product) {
-      console.log("Adding to cart:", product.name);
-      addToShopCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: 1,
-        imageUrl: product.image_url || undefined,
-      });
-      console.log("Cart count after add:", shopCartCount + 1);
-    }
-    setIsDetailOpen(false);
   };
 
   const handleCloseDetail = () => {
@@ -130,7 +90,6 @@ export const GuestShop: React.FC<GuestShopProps> = ({
   const handleAddItem = (itemId: string) => {
     const product = products.find((p) => p.id === itemId);
     if (product) {
-      
       addToShopCart({
         id: product.id,
         name: product.name,
@@ -143,34 +102,15 @@ export const GuestShop: React.FC<GuestShopProps> = ({
   };
 
   return (
-    <GuestPageLayout
-      guestName={guestData.guest_name}
-      hotelName={hotelData.name}
-      roomNumber={guestData.room_number}
-      guestId={guestData.id}
-      dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
-      currentPath={currentPath}
-      onNavigate={onNavigate}
-      onClockClick={onClockClick}
-      headerSlot={
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          onFilterClick={() => {
-            // Handle filter click
-            console.log("Filter clicked");
-          }}
-          placeholder="Search products..."
-          cartButton={
-            <CartButton
-              itemCount={shopCartCount}
-              onClick={() => console.log("View cart")}
-            />
-          }
-        />
-      }
-    >
+    <>
+      {/* Search Bar with Cart */}
+      <GuestShopHeader
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        cartCount={shopCartCount}
+        onCartClick={() => console.log("View cart")}
+      />
+
       {/* Product Categories */}
       {isLoading ? (
         <div className="text-center py-12">
@@ -211,8 +151,7 @@ export const GuestShop: React.FC<GuestShopProps> = ({
         isOpen={isDetailOpen}
         onClose={handleCloseDetail}
         product={selectedProduct}
-        onAddToCart={handleAddToCart}
       />
-    </GuestPageLayout>
+    </>
   );
 };

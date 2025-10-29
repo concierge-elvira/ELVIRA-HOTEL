@@ -4,7 +4,7 @@ import type { Database } from "../types/database";
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 if (!supabaseUrl || !supabaseAnonKey) {
-throw new Error(
+  throw new Error(
     "Missing Supabase environment variables. Please check your .env.local file."
   );
 }
@@ -15,6 +15,10 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     params: {
       eventsPerSecond: 10, // Rate limiting for real-time events
     },
+    // Add heartbeat to keep connections alive
+    heartbeatIntervalMs: 30000, // 30 seconds
+    // Increase timeout for better reliability
+    timeout: 60000, // 60 seconds
   },
   auth: {
     persistSession: true,

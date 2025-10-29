@@ -20,22 +20,32 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Singleton client instance
 let guestSupabaseInstance: SupabaseClient<Database> | null = null;
+let currentToken: string | null = null;
 
 /**
  * Get Supabase client with guest authentication
  * Returns a singleton client to maintain realtime connections
+ * Automatically recreates client if token changes
  */
 export function getGuestSupabaseClient() {
-  // Return existing instance if available
-  if (guestSupabaseInstance) {
+  const session = getGuestSession();
+  const newToken = session?.token || null;
+
+  // Check if token has changed - if so, reset the client
+  if (guestSupabaseInstance && currentToken !== newToken) {
+    console.log("[GuestSupabase] Token changed, resetting client...");
+    resetGuestSupabaseClient();
+  }
+
+  // Return existing instance if available and token matches
+  if (guestSupabaseInstance && currentToken === newToken) {
     return guestSupabaseInstance;
   }
 
-  const session = getGuestSession();
+  // Store current token for comparison
+  currentToken = newToken;
 
-
-
-  if (session?.token) {
+  if (newToken) {
     // Create client with guest JWT token
     guestSupabaseInstance = createClient<Database>(
       supabaseUrl,
@@ -43,7 +53,7 @@ export function getGuestSupabaseClient() {
       {
         global: {
           headers: {
-            Authorization: `Bearer ${session.token}`,
+            Authorization: `Bearer ${newToken}`,
           },
         },
         auth: {
@@ -54,9 +64,14 @@ export function getGuestSupabaseClient() {
           params: {
             eventsPerSecond: 10,
           },
+          // Add heartbeat to keep connections alive
+          heartbeatIntervalMs: 30000, // 30 seconds
+          // Increase timeout for better reliability
+          timeout: 60000, // 60 seconds
         },
       }
     );
+    console.log("[GuestSupabase] Created authenticated client");
   } else {
     // Fallback to anon client
     guestSupabaseInstance = createClient<Database>(
@@ -71,11 +86,15 @@ export function getGuestSupabaseClient() {
           params: {
             eventsPerSecond: 10,
           },
+          // Add heartbeat to keep connections alive
+          heartbeatIntervalMs: 30000, // 30 seconds
+          // Increase timeout for better reliability
+          timeout: 60000, // 60 seconds
         },
       }
     );
+    console.log("[GuestSupabase] Created anonymous client");
   }
-
 
   return guestSupabaseInstance;
 }
@@ -85,13 +104,17 @@ export function getGuestSupabaseClient() {
  * Useful when guest logs out or token changes
  */
 export function resetGuestSupabaseClient() {
+  console.log("[GuestSupabase] Resetting client instance");
 
   if (guestSupabaseInstance) {
     // Remove all channels before resetting
     const channels = guestSupabaseInstance.getChannels();
+    console.log(`[GuestSupabase] Removing ${channels.length} channels...`);
     channels.forEach((channel) => {
       guestSupabaseInstance?.removeChannel(channel);
     });
   }
+
   guestSupabaseInstance = null;
+  currentToken = null;
 }

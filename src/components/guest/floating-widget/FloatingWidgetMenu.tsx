@@ -67,7 +67,7 @@ export const FloatingWidgetMenu: React.FC<FloatingWidgetMenuProps> = ({
 
   return (
     <>
-      <div className="fixed bottom-20 right-6 z-50">
+      <div className="fixed bottom-20 right-6 z-[45]">
         {/* Backdrop overlay when open */}
         {isOpen && (
           <div

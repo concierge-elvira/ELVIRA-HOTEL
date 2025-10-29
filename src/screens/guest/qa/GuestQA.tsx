@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import { useGuestAuth } from "../../../contexts/guest";
 import { GuestPageLayout } from "../shared/layout";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestQARecommendations } from "../../../hooks/guest-management/qa";
 import { QACategoryAccordion, AskQuestion } from "./components";
 
@@ -17,9 +16,6 @@ export const GuestQA: React.FC<GuestQAProps> = ({
   onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
 
   // Fetch Q&A recommendations
   const { data: qaRecommendations = [], isLoading } = useGuestQARecommendations(
@@ -47,15 +43,6 @@ export const GuestQA: React.FC<GuestQAProps> = ({
 
   const { guestData, hotelData } = guestSession;
 
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
-
   return (
     <GuestPageLayout
       guestName={guestData.guest_name}
@@ -63,7 +50,7 @@ export const GuestQA: React.FC<GuestQAProps> = ({
       roomNumber={guestData.room_number}
       guestId={guestData.id}
       dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
+      hotelId={guestData.hotel_id}
       currentPath={currentPath}
       onNavigate={onNavigate}
       onClockClick={onClockClick}

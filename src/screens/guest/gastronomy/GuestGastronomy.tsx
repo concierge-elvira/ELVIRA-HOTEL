@@ -1,22 +1,16 @@
 import React, { useState, useMemo } from "react";
 import { useGuestAuth } from "../../../contexts/guest";
-import { GuestPageLayout } from "../shared/layout";
-import { SearchFilterBar } from "../shared/search-filter";
+import { GuestGastronomyHeader } from "./GuestGastronomyHeader";
 import { PlaceCategorySection } from "../shared/cards/place";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestGastronomyPlaces } from "../../../hooks/guest-management/gastronomy";
 import { PlaceDetailBottomSheet, type PlaceDetailData } from "../shared/modals";
 
 interface GuestGastronomyProps {
   onNavigate?: (path: string) => void;
-  currentPath?: string;
-  onClockClick?: () => void;
 }
 
 export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
   onNavigate,
-  currentPath = "/guest/gastronomy",
-  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
   const [searchQuery, setSearchQuery] = useState("");
@@ -25,16 +19,10 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
   );
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
-
   // Fetch approved gastronomy places
   const { data: gastronomyPlaces = [], isLoading } = useGuestGastronomyPlaces(
     guestSession?.guestData?.hotel_id
   );
-
-
 
   // Extract photo reference from Google Maps URLs
   const extractPhotoReference = (photoRef: string): string | null => {
@@ -62,14 +50,12 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
 
   // Transform places to card format
   const places = useMemo(() => {
-
     const GOOGLE_API_KEY = import.meta.env.VITE_GOOGLE_PLACES_API_KEY || "";
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transformed = gastronomyPlaces
       .map((item: any) => {
         const place = item.thirdparty_places;
-
 
         if (!place) return null;
 
@@ -106,9 +92,6 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
       })
       .filter(Boolean);
 
-
-
-
     return transformed;
   }, [gastronomyPlaces]);
 
@@ -131,19 +114,9 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
     return null;
   }
 
-  const { guestData, hotelData } = guestSession;
-
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
+  const { hotelData } = guestSession;
 
   const handlePlaceClick = (placeId: string) => {
-
     // Find the full place data from gastronomyPlaces
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const placeData = gastronomyPlaces.find((item: any) => {
@@ -208,27 +181,13 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
   };
 
   return (
-    <GuestPageLayout
-      guestName={guestData.guest_name}
-      hotelName={hotelData.name}
-      roomNumber={guestData.room_number}
-      guestId={guestData.id}
-      dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
-      currentPath={currentPath}
-      onNavigate={onNavigate}
-      onClockClick={onClockClick}
-      headerSlot={
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          onFilterClick={() => {
-            console.log("Filter clicked");
-          }}
-          placeholder="Search gastronomy places..."
-        />
-      }
-    >
+    <>
+      {/* Search Bar */}
+      <GuestGastronomyHeader
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+
       {/* Gastronomy Places */}
       {isLoading ? (
         <div className="text-center py-12">
@@ -268,6 +227,6 @@ export const GuestGastronomy: React.FC<GuestGastronomyProps> = ({
         onClose={handleCloseDetail}
         place={selectedPlace}
       />
-    </GuestPageLayout>
+    </>
   );
 };

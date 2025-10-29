@@ -1,26 +1,19 @@
 import React, { useState, useMemo } from "react";
 import { useGuestAuth, useGuestCart } from "../../../contexts/guest";
-import { GuestPageLayout } from "../shared/layout";
-import { SearchFilterBar } from "../shared/search-filter";
-import { CartButton } from "../../../components/guest/shared/cart";
 import { MenuCategorySection } from "../shared/cards/menu-item";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestMenuItems } from "../../../hooks/guest-management/restaurant";
 import {
   MenuItemDetailBottomSheet,
   type MenuItemDetailData,
 } from "../shared/modals";
+import { GuestRestaurantHeader } from "./GuestRestaurantHeader";
 
 interface GuestRestaurantProps {
   onNavigate?: (path: string) => void;
-  currentPath?: string;
-  onClockClick?: () => void;
 }
 
 export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
   onNavigate,
-  currentPath = "/guest/restaurant",
-  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
   const {
@@ -34,10 +27,6 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
   const [selectedMenuItem, setSelectedMenuItem] =
     useState<MenuItemDetailData | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
 
   // Fetch active menu items for the hotel
   const { data: menuItems = [], isLoading } = useGuestMenuItems(
@@ -87,37 +76,12 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
     return null;
   }
 
-  const { guestData, hotelData } = guestSession;
-
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
-
   const handleMenuItemClick = (itemId: string) => {
     const menuItem = menuItems.find((m) => m.id === itemId);
     if (menuItem) {
       setSelectedMenuItem(menuItem);
       setIsDetailOpen(true);
     }
-  };
-
-  const handleAddToCart = (menuItemId: string) => {
-    const menuItem = menuItems.find((m) => m.id === menuItemId);
-    if (menuItem) {
-      addToRestaurantCart({
-        id: menuItem.id,
-        name: menuItem.name,
-        price: menuItem.price,
-        quantity: 1,
-        imageUrl: menuItem.image_url || undefined,
-      });
-    }
-    setIsDetailOpen(false);
   };
 
   const handleCloseDetail = () => {
@@ -128,7 +92,6 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
   const handleAddItem = (itemId: string) => {
     const menuItem = menuItems.find((m) => m.id === itemId);
     if (menuItem) {
-
       addToRestaurantCart({
         id: menuItem.id,
         name: menuItem.name,
@@ -136,39 +99,19 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
         quantity: 1,
         imageUrl: menuItem.image_url || undefined,
       });
-
     }
   };
 
   return (
-    <GuestPageLayout
-      guestName={guestData.guest_name}
-      hotelName={hotelData.name}
-      roomNumber={guestData.room_number}
-      guestId={guestData.id}
-      dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
-      currentPath={currentPath}
-      onNavigate={onNavigate}
-      onClockClick={onClockClick}
-      headerSlot={
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          onFilterClick={() => {
-            // Handle filter click
-            console.log("Filter clicked");
-          }}
-          placeholder="Search menu..."
-          cartButton={
-            <CartButton
-              itemCount={restaurantCartCount}
-              onClick={() => console.log("View cart")}
-            />
-          }
-        />
-      }
-    >
+    <>
+      {/* Search Bar with Cart */}
+      <GuestRestaurantHeader
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        cartCount={restaurantCartCount}
+        onCartClick={() => console.log("View cart")}
+      />
+
       {/* Menu Categories */}
       {isLoading ? (
         <div className="text-center py-12">
@@ -209,8 +152,7 @@ export const GuestRestaurant: React.FC<GuestRestaurantProps> = ({
         isOpen={isDetailOpen}
         onClose={handleCloseDetail}
         item={selectedMenuItem}
-        onAddToCart={handleAddToCart}
       />
-    </GuestPageLayout>
+    </>
   );
 };

@@ -1,7 +1,6 @@
 import React from "react";
 import { useGuestAuth } from "../../../contexts/guest";
 import { GuestPageLayout } from "../shared/layout";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 
 interface GuestPlacesProps {
   onNavigate?: (path: string) => void;
@@ -15,24 +14,12 @@ export const GuestPlaces: React.FC<GuestPlacesProps> = ({
   onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
 
   if (!guestSession) {
     return null;
   }
 
   const { guestData, hotelData } = guestSession;
-
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
 
   return (
     <GuestPageLayout
@@ -41,7 +28,7 @@ export const GuestPlaces: React.FC<GuestPlacesProps> = ({
       roomNumber={guestData.room_number}
       guestId={guestData.id}
       dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
+      hotelId={guestData.hotel_id}
       currentPath={currentPath}
       onNavigate={onNavigate}
       onClockClick={onClockClick}

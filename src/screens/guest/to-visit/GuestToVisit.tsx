@@ -1,7 +1,5 @@
 import React, { useState, useMemo } from "react";
 import { useGuestAuth } from "../../../contexts/guest";
-import { GuestPageLayout } from "../shared/layout";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestRecommendedPlaces } from "../../../hooks/guest-management/recommended-places";
 import {
   RecommendedPlaceCard,
@@ -16,24 +14,14 @@ type RecommendedPlace =
 
 interface GuestToVisitProps {
   onNavigate?: (path: string) => void;
-  currentPath?: string;
-  onClockClick?: () => void;
 }
 
-export const GuestToVisit: React.FC<GuestToVisitProps> = ({
-  onNavigate,
-  currentPath = "/guest/to-visit",
-  onClockClick,
-}) => {
+export const GuestToVisit: React.FC<GuestToVisitProps> = ({ onNavigate }) => {
   const { guestSession } = useGuestAuth();
   const [selectedPlace, setSelectedPlace] = useState<RecommendedPlace | null>(
     null
   );
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
 
   // Fetch active recommended places
   const { data: recommendedPlaces = [], isLoading } = useGuestRecommendedPlaces(
@@ -63,16 +51,7 @@ export const GuestToVisit: React.FC<GuestToVisitProps> = ({
     return null;
   }
 
-  const { guestData, hotelData } = guestSession;
-
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
+  const { hotelData } = guestSession;
 
   const handlePlaceClick = (placeId: string) => {
     const place = placesWithImages.find((p) => p.id === placeId);
@@ -97,17 +76,7 @@ export const GuestToVisit: React.FC<GuestToVisitProps> = ({
       : undefined;
 
   return (
-    <GuestPageLayout
-      guestName={guestData.guest_name}
-      hotelName={hotelData.name}
-      roomNumber={guestData.room_number}
-      guestId={guestData.id}
-      dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
-      currentPath={currentPath}
-      onNavigate={onNavigate}
-      onClockClick={onClockClick}
-    >
+    <>
       {/* Page Content */}
       <div className="px-4 py-6">
         {/* Header */}
@@ -178,6 +147,6 @@ export const GuestToVisit: React.FC<GuestToVisitProps> = ({
         place={selectedPlace}
         hotelCoordinates={hotelCoordinates}
       />
-    </GuestPageLayout>
+    </>
   );
 };

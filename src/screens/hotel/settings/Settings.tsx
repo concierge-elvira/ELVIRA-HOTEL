@@ -105,6 +105,7 @@ export function Settings() {
           </TableContainer>
         );
       case "appearance":
+        // Don't wrap here - will be wrapped in the return statement
         return <AppearanceTab hotelName={currentUser?.hotel?.name} />;
       case "control-panel":
         return (
@@ -145,22 +146,32 @@ export function Settings() {
         }
       />
 
-      {/* Tabs without Search */}
-      <TabsWithoutSearch
-        tabs={tabs}
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        actions={
-          activeTab === "appearance" ? (
-            <AppearanceProvider>
-              <AppearanceActions />
-            </AppearanceProvider>
-          ) : undefined
-        }
-      />
+      {activeTab === "appearance" ? (
+        <AppearanceProvider>
+          {/* Tabs without Search */}
+          <TabsWithoutSearch
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            actions={<AppearanceActions />}
+          />
 
-      {/* Content Area */}
-      {getTabContent()}
+          {/* Content Area */}
+          {getTabContent()}
+        </AppearanceProvider>
+      ) : (
+        <>
+          {/* Tabs without Search */}
+          <TabsWithoutSearch
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+
+          {/* Content Area */}
+          {getTabContent()}
+        </>
+      )}
     </PageContent>
   );
 }

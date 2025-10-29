@@ -1,10 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useGuestAuth, useGuestCart } from "../../../contexts/guest";
-import { GuestPageLayout } from "../shared/layout";
-import { SearchFilterBar } from "../shared/search-filter";
-import { CartButton } from "../../../components/guest/shared/cart";
+import { GuestAmenitiesHeader } from "./GuestAmenitiesHeader";
 import { MenuCategorySection } from "../shared/cards/menu-item";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestAmenities } from "../../../hooks/guest-management/amenities";
 import {
   AmenityDetailBottomSheet,
@@ -14,14 +11,10 @@ import type { MenuItemCardProps } from "../shared/cards/menu-item/MenuItemCard";
 
 interface GuestAmenitiesProps {
   onNavigate?: (path: string) => void;
-  currentPath?: string;
-  onClockClick?: () => void;
 }
 
 export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
   onNavigate,
-  currentPath = "/guest/amenities",
-  onClockClick,
 }) => {
   const { guestSession } = useGuestAuth();
   const {
@@ -34,10 +27,6 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
   const [selectedAmenity, setSelectedAmenity] =
     useState<AmenityDetailData | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
 
   const { data: amenities, isLoading } = useGuestAmenities(
     guestSession?.guestData?.hotel_id
@@ -86,19 +75,6 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
     }
   };
 
-  const handleBook = (amenityId: string) => {
-    const amenity = amenities?.find((a) => a.id === amenityId);
-    if (amenity) {
-      addToAmenityCart({
-        id: amenity.id,
-        name: amenity.name,
-        price: amenity.price,
-        imageUrl: amenity.image_url || undefined,
-      });
-    }
-    setIsDetailOpen(false);
-  };
-
   const handleCloseDetail = () => {
     setIsDetailOpen(false);
     setSelectedAmenity(null);
@@ -124,47 +100,16 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
     return null;
   }
 
-  const { guestData, hotelData } = guestSession;
-
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
-
   return (
-    <GuestPageLayout
-      guestName={guestData.guest_name}
-      hotelName={hotelData.name}
-      roomNumber={guestData.room_number}
-      guestId={guestData.id}
-      hotelId={guestData.hotel_id}
-      dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
-      currentPath={currentPath}
-      onNavigate={onNavigate}
-      onClockClick={onClockClick}
-      headerSlot={
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          onFilterClick={() => {
-            // Handle filter click
-            console.log("Filter clicked");
-          }}
-          placeholder="Search amenities..."
-          cartButton={
-            <CartButton
-              itemCount={amenityCartCount}
-              onClick={() => console.log("View cart")}
-            />
-          }
-        />
-      }
-    >
+    <>
+      {/* Search Bar with Cart */}
+      <GuestAmenitiesHeader
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        cartCount={amenityCartCount}
+        onCartClick={() => console.log("View cart")}
+      />
+
       {isLoading ? (
         <div className="px-4 py-6 text-center text-gray-600">
           Loading amenities...
@@ -195,8 +140,7 @@ export const GuestAmenities: React.FC<GuestAmenitiesProps> = ({
         isOpen={isDetailOpen}
         onClose={handleCloseDetail}
         amenity={selectedAmenity}
-        onBook={handleBook}
       />
-    </GuestPageLayout>
+    </>
   );
 };

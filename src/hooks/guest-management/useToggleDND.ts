@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "../../services/supabase";
+import { getGuestSupabaseClient } from "../../services/guestSupabase";
 
 interface ToggleDNDParams {
   guestId: string;
@@ -8,20 +8,28 @@ interface ToggleDNDParams {
 
 /**
  * Toggle guest DND (Do Not Disturb) status
+ * Uses guest Supabase client to ensure proper authentication context
  */
 export function useToggleDND() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ guestId, currentStatus }: ToggleDNDParams) => {
-      const { data, error } = await supabase
+      const guestSupabase = getGuestSupabaseClient();
+
+      const { data, error } = await guestSupabase
         .from("guests")
         .update({ dnd_status: !currentStatus })
         .eq("id", guestId)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("[useToggleDND] Error updating DND status:", error);
+        throw error;
+      }
+
+      console.log("[useToggleDND] ✅ DND status updated successfully:", data);
       return data;
     },
     onSuccess: () => {

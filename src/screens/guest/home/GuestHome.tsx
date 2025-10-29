@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useGuestAuth } from "../../../contexts/guest";
-import { GuestPageLayout } from "../shared/layout";
-import { StayDetailsCard } from "../shared/cards";
-import { CategoryMenu, type CategoryType } from "../shared/menus";
+import { StayDetailsCard } from "../shared/cards/StayDetailsCard";
+import { CategoryMenu } from "../shared/menus/CategoryMenu";
 import {
   HotelCategoryCards,
   ExperiencesCategoryCards,
@@ -12,30 +11,19 @@ import { RecommendedSection } from "../shared/recommended";
 import { AboutUsSection } from "../shared/about-us";
 import { PhotoGallerySection } from "../shared/photo-gallery";
 import { EmergencyContactsSection } from "../shared/emergency-contacts";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
-import {
-  useGuestRecommendations,
-  useGuestExperienceRecommendations,
-} from "../../../hooks/guest-management/recommendations";
+import type { CategoryType } from "../shared/menus/CategoryMenu";
+import { useGuestRecommendations } from "../../../hooks/guest-management/recommendations";
+import { useGuestExperienceRecommendations } from "../../../hooks/guest-management/recommendations";
 import { useGuestAboutUs } from "../../../hooks/guest-management/about-us";
 import { useGuestPhotoGallery } from "../../../hooks/guest-management/photo-gallery";
 import { useGuestEmergencyContacts } from "../../../hooks/guest-management/emergency-contacts";
 
 interface GuestHomeProps {
   onNavigate?: (path: string) => void;
-  currentPath?: string;
-  onClockClick?: () => void;
 }
 
-export const GuestHome: React.FC<GuestHomeProps> = ({
-  onNavigate,
-  currentPath = "/guest/home",
-  onClockClick,
-}) => {
+export const GuestHome: React.FC<GuestHomeProps> = ({ onNavigate }) => {
   const { guestSession } = useGuestAuth();
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
 
   const { data: recommendations, isLoading: recommendationsLoading } =
     useGuestRecommendations(guestSession?.guestData?.hotel_id, 10);
@@ -64,16 +52,7 @@ export const GuestHome: React.FC<GuestHomeProps> = ({
     return null;
   }
 
-  const { guestData, hotelData } = guestSession;
-
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
+  const { guestData } = guestSession;
 
   // Handle category selection
   const handleCategoryChange = (category: CategoryType) => {
@@ -81,17 +60,7 @@ export const GuestHome: React.FC<GuestHomeProps> = ({
   };
 
   return (
-    <GuestPageLayout
-      guestName={guestData.guest_name}
-      hotelName={hotelData.name}
-      roomNumber={guestData.room_number}
-      guestId={guestData.id}
-      dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
-      currentPath={currentPath}
-      onNavigate={onNavigate}
-      onClockClick={onClockClick}
-    >
+    <>
       {/* Stay Details Card */}
       <StayDetailsCard
         checkInDate="2025-08-29"
@@ -183,6 +152,6 @@ export const GuestHome: React.FC<GuestHomeProps> = ({
           <EmergencyContactsSection contacts={emergencyContacts} />
         </div>
       )}
-    </GuestPageLayout>
+    </>
   );
 };

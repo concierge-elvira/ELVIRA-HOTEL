@@ -1,33 +1,21 @@
 import React, { useState, useMemo } from "react";
 import { useGuestAuth } from "../../../contexts/guest";
-import { GuestPageLayout } from "../shared/layout";
-import { SearchFilterBar } from "../shared/search-filter";
+import { GuestToursHeader } from "./GuestToursHeader";
 import { PlaceCategorySection } from "../shared/cards/place";
-import { useAnnouncements } from "../../../hooks/announcements/useAnnouncements";
 import { useGuestToursPlaces } from "../../../hooks/guest-management/tours";
 import { PlaceDetailBottomSheet, type PlaceDetailData } from "../shared/modals";
 
 interface GuestToursProps {
   onNavigate?: (path: string) => void;
-  currentPath?: string;
-  onClockClick?: () => void;
 }
 
-export const GuestTours: React.FC<GuestToursProps> = ({
-  onNavigate,
-  currentPath = "/guest/tours",
-  onClockClick,
-}) => {
+export const GuestTours: React.FC<GuestToursProps> = ({ onNavigate }) => {
   const { guestSession } = useGuestAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPlace, setSelectedPlace] = useState<PlaceDetailData | null>(
     null
   );
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-
-  const { data: announcements } = useAnnouncements(
-    guestSession?.guestData?.hotel_id
-  );
 
   // Fetch approved tours places
   const { data: toursPlaces = [], isLoading } = useGuestToursPlaces(
@@ -124,19 +112,9 @@ export const GuestTours: React.FC<GuestToursProps> = ({
     return null;
   }
 
-  const { guestData, hotelData } = guestSession;
-
-  // Format announcements for ticker
-  const activeAnnouncements =
-    announcements
-      ?.filter((a) => a.is_active)
-      .map((a) => ({
-        id: a.id,
-        message: `${a.title} • ${a.description}`,
-      })) || [];
+  const { hotelData } = guestSession;
 
   const handlePlaceClick = (placeId: string) => {
-
     // Find the full place data from toursPlaces
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const placeData = toursPlaces.find((item: any) => {
@@ -201,27 +179,13 @@ export const GuestTours: React.FC<GuestToursProps> = ({
   };
 
   return (
-    <GuestPageLayout
-      guestName={guestData.guest_name}
-      hotelName={hotelData.name}
-      roomNumber={guestData.room_number}
-      guestId={guestData.id}
-      dndStatus={guestData.dnd_status}
-      announcements={activeAnnouncements}
-      currentPath={currentPath}
-      onNavigate={onNavigate}
-      onClockClick={onClockClick}
-      headerSlot={
-        <SearchFilterBar
-          searchValue={searchQuery}
-          onSearchChange={setSearchQuery}
-          onFilterClick={() => {
-            console.log("Filter clicked");
-          }}
-          placeholder="Search tours and activities..."
-        />
-      }
-    >
+    <>
+      {/* Search Bar */}
+      <GuestToursHeader
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+
       {/* Tours Places */}
       {isLoading ? (
         <div className="text-center py-12">
@@ -261,6 +225,6 @@ export const GuestTours: React.FC<GuestToursProps> = ({
         onClose={handleCloseDetail}
         place={selectedPlace}
       />
-    </GuestPageLayout>
+    </>
   );
 };
